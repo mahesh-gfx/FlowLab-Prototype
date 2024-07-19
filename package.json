@@ -1,12 +1,12 @@
 {
-  "name": "data-viz-tool-prototype",
+  "name": "data-viz-tool",
   "private": true,
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "start:frontend": "npm run start --workspace=@data-viz-tool-prototype/frontend",
-    "start:backend": "npm run start --workspace=@data-viz-tool-prototype/backend",
+    "start:frontend": "npm run start --workspace=@data-viz-tool/frontend",
+    "start:backend": "npm run start --workspace=@data-viz-tool/backend",
     "build": "npm run build --workspaces",
     "dev": "concurrently \"npm run start:frontend\" \"npm run start:backend\""
   },
