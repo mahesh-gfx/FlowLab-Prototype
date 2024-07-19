@@ -1,0 +1,17 @@
+{
+  "name": "@data-viz-tool-prototype/backend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.4",
+    "@types/express": "^4.17.13",
+    "ts-node": "^10.4.0"
+  },
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "build": "tsc"
+  }
+}

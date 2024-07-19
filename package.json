@@ -1,0 +1,17 @@
+{
+  "name": "data-viz-tool-prototype",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "start:frontend": "npm run start --workspace=@data-viz-tool-prototype/frontend",
+    "start:backend": "npm run start --workspace=@data-viz-tool-prototype/backend",
+    "build": "npm run build --workspaces",
+    "dev": "concurrently \"npm run start:frontend\" \"npm run start:backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.0",
+    "lerna": "^4.0.0"
+  }
+}
