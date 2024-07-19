@@ -8,7 +8,7 @@
     "start:frontend": "npm run start --workspace=@data-viz-tool/frontend",
     "start:backend": "npm run start --workspace=@data-viz-tool/backend",
     "build": "npm run build --workspaces",
-    "dev": "concurrently \"npm run start:frontend\" \"npm run start:backend\""
+    "dev": "concurrently --names \"frontend,backend\" --prefix-colors \"blue,green\" \"npm:start:frontend\" \"npm:start:backend\""
   },
   "devDependencies": {
     "concurrently": "^6.2.0",
