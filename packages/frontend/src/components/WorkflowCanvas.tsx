@@ -14,10 +14,15 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import NodePanel from "./NodePanel";
+import NodeConfigPopup from "./NodeConfigPopup";
 
 export interface CustomNodeData {
   label: string;
   type: string;
+  handlePosition?: "top" | "right" | "bottom" | "left";
+  style?: {
+    backgroundColor?: string; // Optional for node color
+  };
 }
 
 export interface NodeTypes {
@@ -54,6 +59,13 @@ const WorkflowCanvas: React.FC = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node<CustomNodeData> | null>(
+    null
+  );
+
+  const onInit = useCallback((instance: ReactFlowInstance) => {
+    setReactFlowInstance(instance);
+  }, []);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -81,7 +93,7 @@ const WorkflowCanvas: React.FC = () => {
         id: getId(),
         type,
         position,
-        data: { label: `${type} node`, type },
+        data: { label: `${type} node`, type, handlePosition: "bottom" }, // Set default handle position
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -94,6 +106,27 @@ const WorkflowCanvas: React.FC = () => {
     event.dataTransfer.effectAllowed = "move";
   };
 
+  const onNodeDoubleClick = useCallback(
+    (event: React.MouseEvent, node: Node<CustomNodeData>) => {
+      setSelectedNode(node);
+    },
+    []
+  );
+
+  const closePopup = () => {
+    setSelectedNode(null);
+  };
+
+  const updateNodeData = (nodeId: string, newData: Partial<CustomNodeData>) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, ...newData } }
+          : node
+      )
+    );
+  };
+
   return (
     <div style={{ display: "flex", height: "600px" }}>
       <NodePanel nodeTypes={nodeTypes} onDragStart={onDragStart} />
@@ -104,9 +137,10 @@ const WorkflowCanvas: React.FC = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onInit={setReactFlowInstance}
+          onInit={onInit}
           onDrop={onDrop}
           onDragOver={onDragOver}
+          onNodeDoubleClick={onNodeDoubleClick}
           fitView
         >
           <MiniMap />
@@ -114,6 +148,13 @@ const WorkflowCanvas: React.FC = () => {
           <Background />
         </ReactFlow>
       </div>
+      {selectedNode && (
+        <NodeConfigPopup
+          node={selectedNode}
+          onClose={closePopup}
+          onUpdate={updateNodeData}
+        />
+      )}
     </div>
   );
 };
