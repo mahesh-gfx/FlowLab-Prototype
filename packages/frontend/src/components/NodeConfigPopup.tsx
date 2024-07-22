@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Node } from "reactflow";
-import { CustomNodeData } from "./WorkflowCanvas";
+import { NodeData } from "@data-viz-tool/shared";
 
 interface NodeConfigPopupProps {
-  node: Node<CustomNodeData>;
+  node: Node<NodeData>;
   onClose: () => void;
-  onUpdate: (nodeId: string, newData: Partial<CustomNodeData>) => void;
+  onUpdate: (nodeId: string, newData: Partial<NodeData>) => void;
 }
 
 const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
@@ -13,67 +13,36 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   onClose,
   onUpdate,
 }) => {
-  const [activeTab, setActiveTab] = useState("parameters");
-  const [nodeColor, setNodeColor] = useState(
-    node.style?.backgroundColor || "#ffffff"
-  );
+  const [label, setLabel] = useState(node.data.label);
 
-  // Explicitly type handlePosition
-  const [handlePosition, setHandlePosition] = useState<
-    "top" | "right" | "bottom" | "left"
-  >(node.data.handlePosition || "bottom");
-
-  const handleColorChange = (color: string) => {
-    setNodeColor(color);
-    onUpdate(node.id, { style: { ...node.style, backgroundColor: color } });
-  };
-
-  const handlePositionChange = (
-    position: "top" | "right" | "bottom" | "left"
-  ) => {
-    setHandlePosition(position);
-    onUpdate(node.id, { handlePosition: position }); // Update the handle position
+  const handleSave = () => {
+    onUpdate(node.id, { label });
+    onClose();
   };
 
   return (
     <div
       className="node-config-popup"
-      style={
-        {
-          /* styles */
-        }
-      }
+      style={{
+        position: "fixed",
+        top: "100px",
+        right: "10px",
+        background: "white",
+        padding: "20px",
+        border: "1px solid black",
+        borderRadius: "20px",
+      }}
     >
       <h2>{node.data.label} Configuration</h2>
-      <div className="tabs">
-        <button onClick={() => setActiveTab("parameters")}>Parameters</button>
-        <button onClick={() => setActiveTab("settings")}>Settings</button>
-        <button onClick={() => setActiveTab("connections")}>Connections</button>
-      </div>
-      <div className="tab-content">
-        {activeTab === "settings" && (
-          <div>
-            <h3>Settings</h3>
-            <label>
-              Handle Position:
-              <select
-                value={handlePosition}
-                onChange={(e) =>
-                  handlePositionChange(
-                    e.target.value as "top" | "right" | "bottom" | "left"
-                  )
-                }
-              >
-                <option value="top">Top</option>
-                <option value="right">Right</option>
-                <option value="bottom">Bottom</option>
-                <option value="left">Left</option>
-              </select>
-            </label>
-          </div>
-        )}
-        {/* Other tab contents */}
-      </div>
+      <label>
+        Label:
+        <input
+          type="text"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+        />
+      </label>
+      <button onClick={handleSave}>Save</button>
       <button onClick={onClose}>Close</button>
     </div>
   );

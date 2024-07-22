@@ -1,161 +1,244 @@
-import React, { useCallback, useState, DragEvent } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import ReactFlow, {
-  MiniMap,
-  Controls,
-  Background,
+  ReactFlowProvider,
+  addEdge,
   useNodesState,
   useEdgesState,
-  addEdge,
-  Node,
-  Edge,
+  Controls,
+  Background,
   Connection,
-  XYPosition,
-  ReactFlowInstance,
+  Edge,
+  Node,
+  NodeProps,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { WorkflowStructure, NodeData } from "@data-viz-tool/shared";
+import * as nodeModules from "@data-viz-tool/nodes";
 import NodePanel from "./NodePanel";
 import NodeConfigPopup from "./NodeConfigPopup";
+import { executeWorkflow } from "../api/executeWorkflow";
+import { getNodeTypes } from "../api/getNodeTypes";
+import { getNodeConfig } from "../api/getNodeConfig";
 
-export interface CustomNodeData {
-  label: string;
-  type: string;
-  handlePosition?: "top" | "right" | "bottom" | "left";
-  style?: {
-    backgroundColor?: string; // Optional for node color
-  };
-}
-
-export interface NodeTypes {
-  type: string;
-  label: string;
-}
-
-const initialNodes: Node<CustomNodeData>[] = [
-  {
-    id: "1",
-    position: { x: 250, y: 0 },
-    data: { label: "Input", type: "input" },
+// Create wrapper components for node classes
+const nodeTypes = Object.entries(nodeModules).reduce(
+  (acc, [key, NodeClass]) => {
+    if (typeof NodeClass === "function" && key !== "BaseNode") {
+      acc[key] = React.memo((props: NodeProps) => {
+        const { data } = props;
+        return (
+          <div
+            className="react-flow__node-default"
+            style={{
+              padding: "10px",
+              borderRadius: "3px",
+              width: 150,
+              fontSize: "12px",
+            }}
+          >
+            <div style={{ fontWeight: "bold" }}>{data.label}</div>
+            {Object.entries(data).map(
+              ([key, value]) =>
+                key !== "label" && (
+                  <div key={key}>
+                    <strong>{key}:</strong> {JSON.stringify(value)}
+                  </div>
+                )
+            )}
+          </div>
+        );
+      });
+    }
+    return acc;
   },
-  {
-    id: "2",
-    position: { x: 250, y: 100 },
-    data: { label: "Process", type: "process" },
-  },
-];
-
-const initialEdges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
-
-const nodeTypes: NodeTypes[] = [
-  { type: "input", label: "Input Node" },
-  { type: "process", label: "Process Node" },
-  { type: "output", label: "Output Node" },
-];
-
-let id = 3;
-const getId = () => `${id++}`;
+  {} as Record<string, React.ComponentType<NodeProps>>
+);
 
 const WorkflowCanvas: React.FC = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [reactFlowInstance, setReactFlowInstance] =
-    useState<ReactFlowInstance | null>(null);
-  const [selectedNode, setSelectedNode] = useState<Node<CustomNodeData> | null>(
-    null
-  );
-
-  const onInit = useCallback((instance: ReactFlowInstance) => {
-    setReactFlowInstance(instance);
-  }, []);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null);
+  const [availableNodeTypes, setAvailableNodeTypes] = useState<string[]>([]);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
 
-  const onDragOver = useCallback((event: DragEvent) => {
+  const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
 
   const onDrop = useCallback(
-    (event: DragEvent) => {
+    (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
 
-      if (!reactFlowInstance) return;
+      if (reactFlowWrapper.current && reactFlowInstance) {
+        const reactFlowBounds =
+          reactFlowWrapper.current.getBoundingClientRect();
+        const type = event.dataTransfer.getData("application/reactflow");
+        const position = reactFlowInstance.project({
+          x: event.clientX - reactFlowBounds.left,
+          y: event.clientY - reactFlowBounds.top,
+        });
 
-      const type = event.dataTransfer.getData("application/reactflow");
-      const position = reactFlowInstance.project({
-        x: event.clientX,
-        y: event.clientY,
-      }) as XYPosition;
-
-      const newNode: Node<CustomNodeData> = {
-        id: getId(),
-        type,
-        position,
-        data: { label: `${type} node`, type, handlePosition: "bottom" }, // Set default handle position
-      };
-
-      setNodes((nds) => nds.concat(newNode));
+        getNodeConfig(type).then((config) => {
+          const newNode: Node<NodeData> = {
+            id: `${type}-${nodes.length + 1}`,
+            type,
+            position,
+            data: { ...config, type, label: config.label || type },
+          };
+          setNodes((nds) => nds.concat(newNode));
+        });
+      }
     },
-    [reactFlowInstance]
+    [reactFlowInstance, nodes, setNodes]
   );
 
-  const onDragStart = (event: DragEvent, nodeType: string) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
-    event.dataTransfer.effectAllowed = "move";
-  };
-
   const onNodeDoubleClick = useCallback(
-    (event: React.MouseEvent, node: Node<CustomNodeData>) => {
+    (event: React.MouseEvent, node: Node<NodeData>) => {
       setSelectedNode(node);
     },
     []
   );
 
-  const closePopup = () => {
-    setSelectedNode(null);
+  const onDragStart = (
+    event: React.DragEvent<HTMLDivElement>,
+    nodeType: string
+  ) => {
+    event.dataTransfer.setData("application/reactflow", nodeType);
+    event.dataTransfer.effectAllowed = "move";
   };
 
-  const updateNodeData = (nodeId: string, newData: Partial<CustomNodeData>) => {
-    setNodes((nds) =>
-      nds.map((node) =>
-        node.id === nodeId
-          ? { ...node, data: { ...node.data, ...newData } }
-          : node
-      )
-    );
-  };
+  const onExport = useCallback(() => {
+    if (reactFlowInstance) {
+      const flow = reactFlowInstance.toObject();
+      const workflowData: WorkflowStructure = {
+        nodes: flow.nodes,
+        edges: flow.edges,
+      };
+      const json = JSON.stringify(workflowData, null, 2);
+      console.log(json);
+      // You can save this JSON to a file or send it to the server
+    }
+  }, [reactFlowInstance]);
+
+  const onImport = useCallback(
+    (importedData: string) => {
+      try {
+        const { nodes: importedNodes, edges: importedEdges } = JSON.parse(
+          importedData
+        ) as WorkflowStructure;
+        setNodes(importedNodes);
+        setEdges(importedEdges);
+      } catch (error) {
+        console.error("Failed to import workflow:", error);
+      }
+    },
+    [setNodes, setEdges]
+  );
+
+  const onExecuteWorkflow = useCallback(() => {
+    if (reactFlowInstance) {
+      const flow = reactFlowInstance.toObject();
+      const workflowData: WorkflowStructure = {
+        nodes: flow.nodes,
+        edges: flow.edges,
+      };
+      executeWorkflow(workflowData)
+        .then((result) => {
+          console.log("Workflow execution result:", result);
+          // Update nodes with results
+          setNodes((nds) =>
+            nds.map((node) => ({
+              ...node,
+              data: {
+                ...node.data,
+                result: result[node.id],
+              },
+            }))
+          );
+        })
+        .catch((error) => {
+          console.error("Workflow execution failed:", error);
+        });
+    }
+  }, [reactFlowInstance, setNodes]);
+
+  React.useEffect(() => {
+    getNodeTypes().then(setAvailableNodeTypes).catch(console.error);
+  }, []);
 
   return (
-    <div style={{ display: "flex", height: "600px" }}>
-      <NodePanel nodeTypes={nodeTypes} onDragStart={onDragStart} />
-      <div style={{ flex: 1 }}>
+    <ReactFlowProvider>
+      <div style={{ height: "600px" }} ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onInit={onInit}
+          onInit={setReactFlowInstance}
           onDrop={onDrop}
           onDragOver={onDragOver}
           onNodeDoubleClick={onNodeDoubleClick}
+          nodeTypes={nodeTypes}
           fitView
         >
-          <MiniMap />
           <Controls />
           <Background />
         </ReactFlow>
+        <NodePanel nodeTypes={availableNodeTypes} onDragStart={onDragStart} />
+        <div
+          style={{
+            display: "flex",
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            gap: "10px",
+          }}
+        >
+          <button onClick={onExport}>Export Workflow</button>
+          <label htmlFor="import-workflow">Import Workflow</label>
+          <input
+            type="file"
+            id="import-workflow"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  if (event.target?.result) {
+                    onImport(event.target.result as string);
+                  }
+                };
+                reader.readAsText(file);
+              }
+            }}
+          />
+          <button onClick={onExecuteWorkflow}>Execute Workflow</button>
+        </div>
+        {selectedNode && (
+          <NodeConfigPopup
+            node={selectedNode}
+            onClose={() => setSelectedNode(null)}
+            onUpdate={(nodeId, newData) => {
+              setNodes((nds) =>
+                nds.map((node) =>
+                  node.id === nodeId
+                    ? { ...node, data: { ...node.data, ...newData } }
+                    : node
+                )
+              );
+            }}
+          />
+        )}
       </div>
-      {selectedNode && (
-        <NodeConfigPopup
-          node={selectedNode}
-          onClose={closePopup}
-          onUpdate={updateNodeData}
-        />
-      )}
-    </div>
+    </ReactFlowProvider>
   );
 };
 

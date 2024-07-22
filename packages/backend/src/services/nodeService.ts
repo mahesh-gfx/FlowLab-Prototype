@@ -32,3 +32,18 @@ export const executeNodeHook = async (
   }
   return hook(node, workflow);
 };
+
+export const getNodeTypes = (): string[] => {
+  return Object.keys(nodeHooks);
+};
+
+export const getNodeConfig = (type: string): Record<string, any> => {
+  // This is a placeholder. In a real implementation, you might want to
+  // store and return actual configuration for each node type.
+  return {
+    label: type,
+    inputs: [],
+    outputs: ["output"],
+    // Add more configuration as needed
+  };
+};
