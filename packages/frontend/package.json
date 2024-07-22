@@ -9,6 +9,8 @@
     "web-vitals": "^4.2.2"
   },
   "devDependencies": {
+    "@data-viz-tool/shared": "file:../shared",
+    "@data-viz-tool/nodes": "file:../nodes",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "react-scripts": "5.0.0",

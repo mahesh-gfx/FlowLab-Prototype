@@ -1,0 +1,16 @@
+0 silly argv {
+0 silly argv   _: [ 'ls' ],
+0 silly argv   lernaVersion: '4.0.0',
+0 silly argv   '$0': 'node_modules\\lerna\\cli.js'
+0 silly argv }
+1 notice cli v4.0.0
+2 verbose rootPath D:\My Projects\data-viz-tool-prototype
+3 error Error: Unsupported URL Type "workspace:": workspace:*
+3 error     at unsupportedURLType (D:\My Projects\data-viz-tool-prototype\node_modules\npm-package-arg\npa.js:246:15)
+3 error     at fromURL (D:\My Projects\data-viz-tool-prototype\node_modules\npm-package-arg\npa.js:306:13)
+3 error     at Function.resolve (D:\My Projects\data-viz-tool-prototype\node_modules\npm-package-arg\npa.js:76:12)
+3 error     at D:\My Projects\data-viz-tool-prototype\node_modules\@lerna\package-graph\index.js:66:30
+3 error     at Array.forEach (<anonymous>)
+3 error     at D:\My Projects\data-viz-tool-prototype\node_modules\@lerna\package-graph\index.js:60:38
+3 error     at PackageGraph.forEach (<anonymous>)
+3 error     at new PackageGraph (D:\My Projects\data-viz-tool-prototype\node_modules\@lerna\package-graph\index.js:49:10)

@@ -1,12 +1,15 @@
 {
-  "name": "@data-viz-tool/shared",
+  "name": "@data-viz-tool/nodes",
   "version": "1.0.0",
-  "description": "Shared types and utilities for data visualization tool",
+  "description": "Node types for data visualization tool",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --build",
     "test": "jest"
+  },
+  "dependencies": {
+    "@data-viz-tool/shared": "file:../shared"
   },
   "devDependencies": {
     "@types/node": "^14.14.31",
@@ -14,5 +17,9 @@
     "jest": "^26.6.3",
     "@types/jest": "^26.0.20",
     "ts-jest": "^26.5.3"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   }
 }

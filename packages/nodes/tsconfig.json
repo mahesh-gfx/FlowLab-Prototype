@@ -11,8 +11,14 @@
     "composite": true,
     "strict": true,
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "jsx": "react",
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "@data-viz-tool/shared": ["../shared/src"]
+    }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "exclude": ["node_modules", "**/*.spec.ts"],
+  "references": [{ "path": "../shared" }]
 }
