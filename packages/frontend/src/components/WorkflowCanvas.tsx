@@ -55,11 +55,11 @@ interface ExecutionError {
 const WorkflowCanvas: React.FC = () => {
   const initialStartNode: Node<NodeData> = {
     id: "start-node",
-    type: "startNode",
+    type: "StartNode",
     position: { x: 100, y: 100 },
     data: {
       label: "Start",
-      type: "startNode",
+      type: "StartNode",
       properties: StartNode.getNodeDefinition().properties.reduce(
         (acc, prop) => {
           acc[prop.name] = prop.default;
@@ -231,12 +231,13 @@ const WorkflowCanvas: React.FC = () => {
         const reactFlowBounds =
           reactFlowWrapper.current.getBoundingClientRect();
         const type = event.dataTransfer.getData("application/reactflow");
-        console.log("Type: ", type);
+        // console.log("Type: ", type);
+        // console.log("Event: ", event);
 
         // Prevent adding multiple start nodes
         if (
-          type === "startNode" &&
-          nodes.some((node) => node.type === "startNode")
+          type === "StartNode" &&
+          nodes.some((node) => node.type === "StartNode")
         ) {
           console.warn("A start node already exists in the workflow.");
           return;

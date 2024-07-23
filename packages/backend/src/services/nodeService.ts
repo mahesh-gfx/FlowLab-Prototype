@@ -2,6 +2,7 @@ import * as workflowNodes from "@data-viz-tool/nodes";
 
 export class NodeService {
   getNodeDefinitions(): Record<string, any> {
+    // console.log("WORKFLOW NODES IN NODE SERVICE: ", workflowNodes);
     return Object.entries(workflowNodes).reduce((acc, [key, NodeClass]) => {
       if (typeof NodeClass === "function" && key !== "BaseNode") {
         if (

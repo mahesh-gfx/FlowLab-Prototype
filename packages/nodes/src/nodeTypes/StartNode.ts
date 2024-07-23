@@ -8,7 +8,7 @@ export class StartNode extends BaseNode {
 
   static getNodeDefinition(): NodeDefinition {
     return {
-      name: "startNode",
+      name: "StartNode",
       displayName: "Start",
       description: "Marks the start of a workflow",
       icon: "play-circle",

@@ -8,7 +8,7 @@ export class InputNode extends BaseNode {
 
   static getNodeDefinition(): NodeDefinition {
     return {
-      name: "inputNode",
+      name: "InputNode",
       displayName: "Input",
       description: "Reads input data for the workflow",
       icon: "file-import",

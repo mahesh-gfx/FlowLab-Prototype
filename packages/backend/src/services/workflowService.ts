@@ -10,6 +10,8 @@ export class WorkflowService {
     node: WorkflowStructure["nodes"][number]
   ): NodeInstance {
     const NodeClass = (workflowNodes as any)[node.type];
+    // console.log("WorkflowNodes: ", workflowNodes);
+    // console.log("NodeClass: ", NodeClass);
     if (typeof NodeClass !== "function") {
       throw new Error(`Unknown node type: ${node.type}`);
     }
@@ -22,8 +24,11 @@ export class WorkflowService {
     const results: Record<string, any> = {};
     const nodeInstances: Record<string, NodeInstance> = {};
 
+    // console.log("WorkflowNodes: ", workflowNodes);
+
     // Create node instances
     for (const node of workflowData.nodes) {
+      // console.log("Node in workflow service: ", node);
       try {
         nodeInstances[node.id] = this.createNodeInstance(node);
       } catch (error) {

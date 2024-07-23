@@ -10,6 +10,8 @@
   "scripts": {
     "build": "lerna run build",
     "start": "lerna run start",
+    "start:frontend": "npm run start --workspace=@data-viz-tool/frontend",
+    "start:backend": "npm run start --workspace=@data-viz-tool/backend",
     "test": "lerna run test",
     "dev": "concurrently --names \"frontend,backend\" --prefix-colors \"blue,green\" \"npm:start:frontend\" \"npm:start:backend\""
   },
