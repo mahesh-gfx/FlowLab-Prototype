@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@data-viz-tool/shared": "file:../shared",
+    "papaparse": "^5.4.1",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.31",
+    "@types/papaparse": "^5.3.14",
     "@types/uuid": "^10.0.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.3",

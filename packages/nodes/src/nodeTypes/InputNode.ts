@@ -1,5 +1,6 @@
 import { BaseNode, NodeDefinition } from "../BaseNode";
 import { WorkflowNode } from "@data-viz-tool/shared";
+import Papa from "papaparse";
 
 export class InputNode extends BaseNode {
   constructor(node: Partial<WorkflowNode>) {
@@ -31,10 +32,9 @@ export class InputNode extends BaseNode {
         {
           displayName: "Data Source",
           name: "dataSource",
-          type: "string",
+          type: "file",
           default: "",
-          description:
-            "Enter the source of the input data (e.g., file path, URL)",
+          description: "Upload the input data file",
         },
         {
           displayName: "Has Headers",
@@ -61,20 +61,25 @@ export class InputNode extends BaseNode {
     const { inputType, dataSource, hasHeaders } = this.data;
     console.log(`Fetching ${inputType} data from ${dataSource}`);
 
-    // This is a placeholder. In a real scenario, you'd implement actual data fetching logic here.
-    const simulatedData = {
-      csv: "id,name,value\n1,Item1,100\n2,Item2,200",
-      json: JSON.stringify([
-        { id: 1, name: "Item1", value: 100 },
-        { id: 2, name: "Item2", value: 200 },
-      ]),
-      xml: "<data><item><id>1</id><name>Item1</name><value>100</value></item><item><id>2</id><name>Item2</name><value>200</value></item></data>",
-    };
+    if (inputType === "csv" && dataSource) {
+      const csvData = await this.readFile(dataSource);
+      const parsedData = Papa.parse(csvData, {
+        header: hasHeaders,
+        dynamicTyping: true,
+      });
+      return { data: parsedData.data };
+    }
 
-    return {
-      data:
-        simulatedData[inputType as keyof typeof simulatedData] ||
-        "No data available",
-    };
+    // Placeholder for other input types
+    return { data: "No data available" };
+  }
+
+  private readFile(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
   }
 }
