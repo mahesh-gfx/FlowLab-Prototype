@@ -36,47 +36,39 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   };
 
   return (
-    <div
-      className="node-config-popup-wrapper"
-      style={{
-        position: "fixed",
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        top: "0px",
-        bottom: "0px",
-        left: "0px",
-        right: "0px",
-        zIndex: 10,
-      }}
-    >
-      <div
-        style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          backgroundColor: "white",
-          padding: "20px",
-          borderRadius: "5px",
-          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h2>{node.data.label} Configuration</h2>
-        {Object.entries(node.data.properties || {}).map(([key, value]) => {
-          return (
-            <div key={key}>
-              <label>{key}: </label>
-              <input
-                type="text"
-                value={config.properties?.[key] || ""}
-                onChange={(e) => handleChange(key, e.target.value)}
-              />
-            </div>
-          );
-        })}
-        <button onClick={handleSubmit}>Save</button>
-        <button onClick={onClose}>Cancel</button>
+    <div className="node-config-popup-wrapper">
+      <div className="node-config-popup">
+        <span className="node-config-title">{node.data.label}</span>
+        <span className="node-config-sub-title">Configuration</span>
+        <div className="node-config-form">
+          {Object.entries(node.data.properties || {}).map(([key, value]) => {
+            return (
+              <div key={key} className="node-config-form-group">
+                <label className="node-config-label">{key} </label>
+                <input
+                  type="text"
+                  className="node-config-input"
+                  value={config.properties?.[key] || ""}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <div className="node-config-actions">
+          <button
+            className="node-config-button node-config-button-save"
+            onClick={handleSubmit}
+          >
+            Save
+          </button>
+          <button
+            className="node-config-button node-config-button-cancel"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );
