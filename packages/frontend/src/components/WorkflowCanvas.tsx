@@ -28,6 +28,7 @@ import NodePanel from "./NodePanel";
 import NodeConfigPopup from "./NodeConfigPopup";
 import { getNodeTypes } from "../api/getNodeTypes";
 import { executeWorkflow } from "../api/executeWorkflow";
+import { saveAs } from "file-saver";
 
 interface NodeDefinition {
   inputs: string[];
@@ -316,7 +317,8 @@ const WorkflowCanvas: React.FC = () => {
       };
       const json = JSON.stringify(workflowData, null, 2);
       console.log(json);
-      // You can save this JSON to a file or send it to the server
+      const blob = new Blob([json], { type: "application/json" });
+      saveAs(blob, "workflow.json");
     }
   }, [reactFlowInstance]);
 
