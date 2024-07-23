@@ -1,21 +1,54 @@
-import { BaseNode } from "../BaseNode";
-import { WorkflowNode } from "@data-viz-tool/shared";
+import { BaseNode, NodeDefinition } from "../BaseNode";
+import { WorkflowNode, NodeData } from "@data-viz-tool/shared";
 
 export class StartNode extends BaseNode {
-  constructor(node: WorkflowNode) {
+  constructor(node: Partial<WorkflowNode>) {
     super(node);
   }
 
-  getFrontendConfig() {
+  getNodeDefinition(): NodeDefinition {
     return {
-      label: "Start Node",
+      name: "startNode",
+      displayName: "Start",
+      description: "Marks the start of a workflow",
+      icon: "play-circle",
       color: "#00ff00",
       inputs: [],
-      outputs: ["output"],
+      outputs: ["main"],
+      properties: [
+        {
+          displayName: "Workflow Name",
+          name: "workflowName",
+          type: "string",
+          default: "",
+          description: "Enter a name for this workflow",
+        },
+        {
+          displayName: "Description",
+          name: "description",
+          type: "text",
+          default: "",
+          description: "Describe the purpose of this workflow",
+        },
+      ],
+      version: 1,
+    };
+  }
+
+  getDefaultData(): Partial<NodeData> {
+    return {
+      ...super.getDefaultData(),
+      workflowName: "",
+      description: "",
     };
   }
 
   async execute(inputs: Record<string, any>) {
-    return { output: "Workflow started" };
+    return {
+      main: {
+        message: "Workflow started",
+        workflowName: this.data.workflowName,
+      },
+    };
   }
 }

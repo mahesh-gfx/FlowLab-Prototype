@@ -1,52 +1,85 @@
-import { BaseNode } from "../BaseNode";
-import { WorkflowNode } from "@data-viz-tool/shared";
+import { BaseNode, NodeDefinition } from "../BaseNode";
+import { WorkflowNode, NodeData } from "@data-viz-tool/shared";
 
 export class InputNode extends BaseNode {
-  constructor(node: WorkflowNode) {
+  constructor(node: Partial<WorkflowNode>) {
     super(node);
   }
 
-  getFrontendConfig() {
+  getNodeDefinition(): NodeDefinition {
     return {
-      label: "Input Node",
+      name: "inputNode",
+      displayName: "Input",
+      description: "Reads input data for the workflow",
+      icon: "file-import",
       color: "#0000ff",
       inputs: [],
       outputs: ["data"],
-      configOptions: {
-        dataSource: { type: "string", label: "Data Source" },
-        format: {
-          type: "select",
-          label: "Data Format",
-          options: ["CSV", "JSON", "XML"],
+      properties: [
+        {
+          displayName: "Input Type",
+          name: "inputType",
+          type: "options",
+          options: [
+            { name: "CSV", value: "csv" },
+            { name: "JSON", value: "json" },
+            { name: "XML", value: "xml" },
+          ],
+          default: "csv",
+          description: "Select the type of input data",
         },
-      },
+        {
+          displayName: "Data Source",
+          name: "dataSource",
+          type: "string",
+          default: "",
+          description:
+            "Enter the source of the input data (e.g., file path, URL)",
+        },
+        {
+          displayName: "Has Headers",
+          name: "hasHeaders",
+          type: "boolean",
+          default: true,
+          description: "Does the input data have headers?",
+          displayOptions: {
+            show: {
+              inputType: ["csv"],
+            },
+          },
+        },
+      ],
+      version: 1,
+    };
+  }
+
+  getDefaultData(): Partial<NodeData> {
+    return {
+      ...super.getDefaultData(),
+      inputType: "csv",
+      dataSource: "",
+      hasHeaders: true,
     };
   }
 
   async execute(inputs: Record<string, any>) {
-    // Simulating data fetching
-    const simulatedData = this.simulateFetchData(
-      this.data.dataSource,
-      this.data.format
-    );
-    return { data: simulatedData };
-  }
+    const { inputType, dataSource, hasHeaders } = this.data;
+    console.log(`Fetching ${inputType} data from ${dataSource}`);
 
-  private simulateFetchData(dataSource: string, format: string): any {
-    // This is a placeholder function to simulate data fetching
-    // replace this with actual data fetching logic
-    console.log(`Fetching data from ${dataSource} in ${format} format`);
-
-    // Simulated data
-    const sampleData = {
-      CSV: "id,name,value\n1,Item1,100\n2,Item2,200",
-      JSON: JSON.stringify([
+    // This is a placeholder.
+    const simulatedData = {
+      csv: "id,name,value\n1,Item1,100\n2,Item2,200",
+      json: JSON.stringify([
         { id: 1, name: "Item1", value: 100 },
         { id: 2, name: "Item2", value: 200 },
       ]),
-      XML: "<data><item><id>1</id><name>Item1</name><value>100</value></item><item><id>2</id><name>Item2</name><value>200</value></item></data>",
+      xml: "<data><item><id>1</id><name>Item1</name><value>100</value></item><item><id>2</id><name>Item2</name><value>200</value></item></data>",
     };
 
-    return sampleData[format as keyof typeof sampleData] || "No data available";
+    return {
+      data:
+        simulatedData[inputType as keyof typeof simulatedData] ||
+        "No data available",
+    };
   }
 }
