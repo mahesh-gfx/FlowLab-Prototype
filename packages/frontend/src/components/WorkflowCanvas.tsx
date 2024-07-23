@@ -29,6 +29,7 @@ import NodeConfigPopup from "./NodeConfigPopup";
 import { getNodeTypes } from "../api/getNodeTypes";
 import { executeWorkflow } from "../api/executeWorkflow";
 import { saveAs } from "file-saver";
+import PopupMessage from "./PopupMessage";
 
 interface NodeDefinition {
   inputs: string[];
@@ -84,6 +85,8 @@ const WorkflowCanvas: React.FC = () => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>(null);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [executionStatus, setExecutionStatus] = useState<string | null>(null);
 
   useEffect(() => {
     getNodeTypes()
@@ -348,6 +351,8 @@ const WorkflowCanvas: React.FC = () => {
 
   const onExecuteWorkflow = useCallback(() => {
     if (reactFlowInstance) {
+      setExecutionStatus("Executing workflow...");
+      setIsExecuting(true);
       const flow = reactFlowInstance.toObject();
       const workflowData: WorkflowStructure = {
         nodes: flow.nodes.map(mapToWorkflowNode),
@@ -358,14 +363,20 @@ const WorkflowCanvas: React.FC = () => {
           console.log("Workflow execution response:", response);
           if (response.result) {
             setExecutionResults(response.result);
+            setExecutionStatus("Workflow execution completed successfully.");
+            setIsExecuting(false);
           }
           if (response.errors) {
             setExecutionErrors(response.errors);
+            setExecutionStatus("Workflow execution completed with errors.");
+            setIsExecuting(false);
           }
         })
         .catch((error) => {
           console.error("Workflow execution failed:", error);
           setExecutionErrors([{ nodeId: "global", error: error.message }]);
+          setExecutionStatus("Workflow execution failed.");
+          setIsExecuting(false);
         });
     }
   }, [reactFlowInstance]);
@@ -418,7 +429,16 @@ const WorkflowCanvas: React.FC = () => {
               }
             }}
           />
-          <button onClick={onExecuteWorkflow}>Execute Workflow</button>
+          <button
+            onClick={onExecuteWorkflow}
+            disabled={isExecuting}
+            style={{
+              opacity: isExecuting ? 0.5 : 1,
+              cursor: isExecuting ? "not-allowed" : "pointer",
+            }}
+          >
+            {isExecuting ? "Executing workflow..." : "Execute Workflow"}
+          </button>
         </div>
         {selectedNode && (
           <NodeConfigPopup
@@ -435,27 +455,22 @@ const WorkflowCanvas: React.FC = () => {
             }}
           />
         )}
-        {executionErrors && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: "20px",
-              right: "20px",
-              background: "red",
-              color: "white",
-              padding: "10px",
-              borderRadius: "5px",
+        {executionStatus && (
+          <PopupMessage
+            message={executionStatus}
+            type={
+              executionErrors
+                ? "error"
+                : executionStatus.includes("completed successfully")
+                ? "success"
+                : "loading"
+            }
+            onClose={() => {
+              setExecutionStatus(null);
+              if (!executionErrors) {
+              }
             }}
-          >
-            <h3>Execution Errors:</h3>
-            <ul>
-              {executionErrors.map((error, index) => (
-                <li key={index}>
-                  {error.nodeId}: {error.error}
-                </li>
-              ))}
-            </ul>
-          </div>
+          />
         )}
       </div>
     </ReactFlowProvider>
