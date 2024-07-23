@@ -1,8 +1,11 @@
-import { Router } from "express";
-import { executeNode } from "../controller/nodeController";
+import express from "express";
+import { nodeService } from "../services/nodeService";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/:id/execute", executeNode);
+router.get("/node-definitions", (req, res) => {
+  const definitions = nodeService.getNodeDefinitions();
+  res.json(definitions);
+});
 
 export default router;

@@ -19,7 +19,13 @@ export abstract class BaseNode {
     };
   }
 
-  abstract getNodeDefinition(): NodeDefinition;
+  static getNodeDefinition(): NodeDefinition {
+    throw new Error("Static getNodeDefinition must be implemented in subclass");
+  }
+
+  getNodeDefinition(): NodeDefinition {
+    return (this.constructor as typeof BaseNode).getNodeDefinition();
+  }
 
   abstract execute(inputs: Record<string, any>): Promise<Record<string, any>>;
 

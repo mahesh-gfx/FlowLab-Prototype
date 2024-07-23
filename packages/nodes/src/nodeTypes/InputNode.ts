@@ -1,12 +1,12 @@
 import { BaseNode, NodeDefinition } from "../BaseNode";
-import { WorkflowNode, NodeData } from "@data-viz-tool/shared";
+import { WorkflowNode } from "@data-viz-tool/shared";
 
 export class InputNode extends BaseNode {
   constructor(node: Partial<WorkflowNode>) {
     super(node);
   }
 
-  getNodeDefinition(): NodeDefinition {
+  static getNodeDefinition(): NodeDefinition {
     return {
       name: "inputNode",
       displayName: "Input",
@@ -53,20 +53,15 @@ export class InputNode extends BaseNode {
     };
   }
 
-  getDefaultData(): Partial<NodeData> {
-    return {
-      ...super.getDefaultData(),
-      inputType: "csv",
-      dataSource: "",
-      hasHeaders: true,
-    };
+  getNodeDefinition(): NodeDefinition {
+    return InputNode.getNodeDefinition();
   }
 
   async execute(inputs: Record<string, any>) {
     const { inputType, dataSource, hasHeaders } = this.data;
     console.log(`Fetching ${inputType} data from ${dataSource}`);
 
-    // This is a placeholder.
+    // This is a placeholder. In a real scenario, you'd implement actual data fetching logic here.
     const simulatedData = {
       csv: "id,name,value\n1,Item1,100\n2,Item2,200",
       json: JSON.stringify([

@@ -1,12 +1,12 @@
 import { BaseNode, NodeDefinition } from "../BaseNode";
-import { WorkflowNode, NodeData } from "@data-viz-tool/shared";
+import { WorkflowNode } from "@data-viz-tool/shared";
 
 export class StartNode extends BaseNode {
   constructor(node: Partial<WorkflowNode>) {
     super(node);
   }
 
-  getNodeDefinition(): NodeDefinition {
+  static getNodeDefinition(): NodeDefinition {
     return {
       name: "startNode",
       displayName: "Start",
@@ -35,12 +35,8 @@ export class StartNode extends BaseNode {
     };
   }
 
-  getDefaultData(): Partial<NodeData> {
-    return {
-      ...super.getDefaultData(),
-      workflowName: "",
-      description: "",
-    };
+  getNodeDefinition(): NodeDefinition {
+    return StartNode.getNodeDefinition();
   }
 
   async execute(inputs: Record<string, any>) {
