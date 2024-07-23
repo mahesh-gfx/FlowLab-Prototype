@@ -1,9 +1,10 @@
+// src/api/getNodeTypes.ts
+
 import axios from "axios";
 
-//TODO: get API_URL from process, Update in ENV
-const API_URL = "http://localhost:3001/api";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
 
-export const getNodeTypes = async (): Promise<string[]> => {
-  const response = await axios.get(`${API_URL}/node-types`);
+export const getNodeTypes = async (): Promise<Record<string, any>> => {
+  const response = await axios.get(`${API_URL}/nodes/node-definitions`);
   return response.data;
 };

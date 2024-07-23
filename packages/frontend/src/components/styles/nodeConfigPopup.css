@@ -1,0 +1,11 @@
+.node-config-popup-wrapper::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(128, 128, 128, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}

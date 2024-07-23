@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Node } from "reactflow";
 import { NodeData } from "@data-viz-tool/shared";
+import "./styles/nodeConfigPopup.css";
 
 interface NodeConfigPopupProps {
   node: Node<NodeData>;
@@ -13,37 +14,70 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   onClose,
   onUpdate,
 }) => {
-  const [label, setLabel] = useState(node.data.label);
+  const [config, setConfig] = useState<Partial<NodeData>>({});
 
-  const handleSave = () => {
-    onUpdate(node.id, { label });
+  useEffect(() => {
+    setConfig(node.data);
+  }, [node]);
+
+  const handleChange = (propertyName: string, value: any) => {
+    setConfig((prev) => ({
+      ...prev,
+      properties: {
+        ...prev.properties,
+        [propertyName]: value,
+      },
+    }));
+  };
+
+  const handleSubmit = () => {
+    onUpdate(node.id, config);
     onClose();
   };
 
   return (
     <div
-      className="node-config-popup"
+      className="node-config-popup-wrapper"
       style={{
         position: "fixed",
-        top: "100px",
-        right: "10px",
-        background: "white",
-        padding: "20px",
-        border: "1px solid black",
-        borderRadius: "20px",
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        top: "0px",
+        bottom: "0px",
+        left: "0px",
+        right: "0px",
+        zIndex: 10,
       }}
     >
-      <h2>{node.data.label} Configuration</h2>
-      <label>
-        Label:
-        <input
-          type="text"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-        />
-      </label>
-      <button onClick={handleSave}>Save</button>
-      <button onClick={onClose}>Close</button>
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          backgroundColor: "white",
+          padding: "20px",
+          borderRadius: "5px",
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+        }}
+      >
+        <h2>{node.data.label} Configuration</h2>
+        {Object.entries(node.data.properties || {}).map(([key, value]) => {
+          return (
+            <div key={key}>
+              <label>{key}: </label>
+              <input
+                type="text"
+                value={config.properties?.[key] || ""}
+                onChange={(e) => handleChange(key, e.target.value)}
+              />
+            </div>
+          );
+        })}
+        <button onClick={handleSubmit}>Save</button>
+        <button onClick={onClose}>Cancel</button>
+      </div>
     </div>
   );
 };
