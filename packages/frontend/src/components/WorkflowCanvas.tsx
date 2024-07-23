@@ -14,6 +14,7 @@ import ReactFlow, {
   Position,
   ReactFlowInstance,
   NodeChange,
+  MiniMap,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import {
@@ -369,8 +370,9 @@ const WorkflowCanvas: React.FC = () => {
           nodeTypes={nodeTypes}
           fitView
         >
-          <Controls />
+          <Controls position="top-right" />
           <Background />
+          <MiniMap position="bottom-right" />
         </ReactFlow>
         <NodePanel nodeTypes={nodeDefinitions} onDragStart={onDragStart} />
         <div
