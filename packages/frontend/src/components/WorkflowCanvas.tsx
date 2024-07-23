@@ -349,33 +349,59 @@ const WorkflowCanvas: React.FC = () => {
     [setNodes, setEdges]
   );
 
+  const getConnectedNodes = (nodes: Node[], edges: Edge[]): Set<string> => {
+    const connectedNodes = new Set<string>();
+    const startNodes = nodes.filter((node) => node.type === "StartNode");
+
+    const traverse = (nodeId: string) => {
+      if (connectedNodes.has(nodeId)) return;
+      connectedNodes.add(nodeId);
+
+      edges.forEach((edge) => {
+        if (edge.source === nodeId) {
+          traverse(edge.target);
+        }
+      });
+    };
+
+    startNodes.forEach((node) => traverse(node.id));
+    return connectedNodes;
+  };
+
   const onExecuteWorkflow = useCallback(() => {
     if (reactFlowInstance) {
-      setExecutionStatus("Executing workflow...");
-      setIsExecuting(true);
       const flow = reactFlowInstance.toObject();
+      const connectedNodeIds = getConnectedNodes(flow.nodes, flow.edges);
+
       const workflowData: WorkflowStructure = {
-        nodes: flow.nodes.map(mapToWorkflowNode),
-        edges: flow.edges.map(mapToWorkflowEdge),
+        nodes: flow.nodes
+          .filter((node) => connectedNodeIds.has(node.id))
+          .map(mapToWorkflowNode),
+        edges: flow.edges
+          .filter(
+            (edge) =>
+              connectedNodeIds.has(edge.source) &&
+              connectedNodeIds.has(edge.target)
+          )
+          .map(mapToWorkflowEdge),
       };
+
+      setIsExecuting(true);
       executeWorkflow(workflowData)
         .then((response) => {
           console.log("Workflow execution response:", response);
           if (response.result) {
             setExecutionResults(response.result);
-            setExecutionStatus("Workflow execution completed successfully.");
             setIsExecuting(false);
           }
           if (response.errors) {
             setExecutionErrors(response.errors);
-            setExecutionStatus("Workflow execution completed with errors.");
             setIsExecuting(false);
           }
         })
         .catch((error) => {
           console.error("Workflow execution failed:", error);
           setExecutionErrors([{ nodeId: "global", error: error.message }]);
-          setExecutionStatus("Workflow execution failed.");
           setIsExecuting(false);
         });
     }
