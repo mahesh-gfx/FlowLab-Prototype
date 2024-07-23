@@ -3,7 +3,7 @@
 export interface NodeData {
   label: string;
   type: string;
-  properties: Record<string, any>;
+  properties?: Record<string, any>;
   [key: string]: any;
 }
 

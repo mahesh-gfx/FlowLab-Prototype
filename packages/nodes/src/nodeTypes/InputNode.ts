@@ -13,7 +13,7 @@ export class InputNode extends BaseNode {
       description: "Reads input data for the workflow",
       icon: "file-import",
       color: "#0000ff",
-      inputs: [],
+      inputs: ["data"],
       outputs: ["data"],
       properties: [
         {

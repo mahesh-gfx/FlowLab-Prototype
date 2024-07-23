@@ -110,8 +110,19 @@ const WorkflowCanvas: React.FC = () => {
             {def.properties.map((prop) => (
               <div key={prop.name}>
                 <strong>{prop.displayName}:</strong>{" "}
-                {JSON.stringify(data.properties[prop.name] || prop.default)}
+                {JSON.stringify(
+                  data.properties?.[prop.name] ?? prop.default ?? ""
+                )}
               </div>
+            ))}
+            {def.inputs.map((input, index) => (
+              <Handle
+                key={`input-${index}`}
+                type="target"
+                position={Position.Left}
+                id={input}
+                style={{ top: `${(index + 1) * 25}%` }}
+              />
             ))}
             {def.outputs.map((output, index) => (
               <Handle
@@ -152,7 +163,9 @@ const WorkflowCanvas: React.FC = () => {
               {def.properties.map((prop) => (
                 <div key={prop.name}>
                   <strong>{prop.displayName}:</strong>{" "}
-                  {JSON.stringify(data.properties[prop.name] || prop.default)}
+                  {JSON.stringify(
+                    data.properties?.[prop.name] ?? prop.default ?? ""
+                  )}
                 </div>
               ))}
               {executionResults && executionResults[props.id] && (
