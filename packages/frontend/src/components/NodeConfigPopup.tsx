@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Node } from "reactflow";
 import { NodeData, NodeProperty } from "@data-viz-tool/shared";
+import DataTable from "react-data-table-component";
 import "./styles/nodeConfigPopup.css";
 
 interface NodeConfigPopupProps {
@@ -20,6 +21,9 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"config" | "output">("config");
   const [config, setConfig] = useState<Partial<NodeData>>({});
+  const [outputView, setOutputView] = useState<"table" | "json" | "binary">(
+    "table"
+  );
 
   useEffect(() => {
     setConfig(node.data);
@@ -45,7 +49,7 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
           content: result,
         });
       };
-      reader.readAsDataURL(file); // Read file as base64 string
+      reader.readAsDataURL(file);
     } else {
       handleChange(propertyName, null);
     }
@@ -57,93 +61,152 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
     onClose();
   };
 
-  const renderConfigurationForm = () => {
-    return nodeDefinition.properties.map((prop) => {
-      const value = config.properties?.[prop.name] || prop.default;
-      switch (prop.type) {
-        case "string":
-        case "text":
-          return (
-            <div key={prop.name} className="form-group">
-              <label htmlFor={prop.name}>{prop.displayName}</label>
-              <input
-                type={prop.type === "string" ? "text" : "textarea"}
-                id={prop.name}
-                value={value}
-                onChange={(e) => handleChange(prop.name, e.target.value)}
-              />
-            </div>
-          );
-        case "number":
-          return (
-            <div key={prop.name} className="form-group">
-              <label htmlFor={prop.name}>{prop.displayName}</label>
-              <input
-                type="number"
-                id={prop.name}
-                value={value}
-                onChange={(e) =>
-                  handleChange(prop.name, parseFloat(e.target.value))
-                }
-              />
-            </div>
-          );
-        case "boolean":
-          return (
-            <div key={prop.name} className="form-group">
-              <label htmlFor={prop.name}>{prop.displayName}</label>
-              <input
-                type="checkbox"
-                id={prop.name}
-                checked={value}
-                onChange={(e) => handleChange(prop.name, e.target.checked)}
-              />
-            </div>
-          );
-        case "options":
-          return (
-            <div key={prop.name} className="form-group">
-              <label htmlFor={prop.name}>{prop.displayName}</label>
-              <select
-                id={prop.name}
-                value={value}
-                onChange={(e) => handleChange(prop.name, e.target.value)}
-              >
-                {prop.options?.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          );
-        case "file":
-          return (
-            <div key={prop.name} className="form-group">
-              <label htmlFor={prop.name}>{prop.displayName}</label>
-              <input
-                type="file"
-                id={prop.name}
-                onChange={(e) =>
-                  handleFileChange(prop.name, e.target.files?.[0] || null)
-                }
-              />
-              {value && value.name && <div>Uploaded file: {value.name}</div>}
-            </div>
-          );
-        default:
-          return null;
-      }
-    });
+  const renderConfigurationForm = (): JSX.Element => {
+    return (
+      <>
+        {nodeDefinition.properties.map((prop) => {
+          const value = config.properties?.[prop.name] || prop.default;
+          switch (prop.type) {
+            case "string":
+            case "text":
+              return (
+                <div key={prop.name} className="form-group">
+                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <input
+                    type={prop.type === "string" ? "text" : "textarea"}
+                    id={prop.name}
+                    value={value}
+                    onChange={(e) => handleChange(prop.name, e.target.value)}
+                  />
+                </div>
+              );
+            case "number":
+              return (
+                <div key={prop.name} className="form-group">
+                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <input
+                    type="number"
+                    id={prop.name}
+                    value={value}
+                    onChange={(e) =>
+                      handleChange(prop.name, parseFloat(e.target.value))
+                    }
+                  />
+                </div>
+              );
+            case "boolean":
+              return (
+                <div key={prop.name} className="form-group">
+                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <input
+                    type="checkbox"
+                    id={prop.name}
+                    checked={value}
+                    onChange={(e) => handleChange(prop.name, e.target.checked)}
+                  />
+                </div>
+              );
+            case "options":
+              return (
+                <div key={prop.name} className="form-group">
+                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <select
+                    id={prop.name}
+                    value={value}
+                    onChange={(e) => handleChange(prop.name, e.target.value)}
+                  >
+                    {prop.options?.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            case "file":
+              return (
+                <div key={prop.name} className="form-group">
+                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <input
+                    type="file"
+                    id={prop.name}
+                    onChange={(e) =>
+                      handleFileChange(prop.name, e.target.files?.[0] || null)
+                    }
+                  />
+                  {value && value.name && (
+                    <div>Uploaded file: {value.name}</div>
+                  )}
+                </div>
+              );
+            default:
+              return null;
+          }
+        })}
+      </>
+    );
   };
 
-  const renderOutput = () => {
+  const renderOutput = (): JSX.Element => {
+    const executionResult = node.data.executionResult;
+
+    if (!executionResult) {
+      return <div>No output available</div>;
+    }
+
+    const renderTableView = (): JSX.Element => {
+      console.log("Execution Result: ", executionResult);
+      if (Array.isArray(executionResult)) {
+        const columns = Object.keys(executionResult[0] || {}).map((key) => ({
+          name: key,
+          selector: (row: any) => row[key],
+        }));
+        return <DataTable columns={columns} data={executionResult} />;
+      }
+      return <div>Data is not in a suitable format for table view</div>;
+    };
+
+    const renderJsonView = (): JSX.Element => {
+      return <pre>{JSON.stringify(executionResult, null, 2)}</pre>;
+    };
+
+    const renderBinaryView = (): JSX.Element => {
+      if (
+        typeof executionResult === "string" &&
+        executionResult.startsWith("data:")
+      ) {
+        return <img src={executionResult} alt="Binary data" />;
+      }
+      return <div>Data is not in a suitable format for binary view</div>;
+    };
+
     return (
       <div>
-        <h3>Output</h3>
-        <pre style={{ maxHeight: "300px", overflowY: "scroll" }}>
-          {JSON.stringify(node.data.executionResult, null, 2)}
-        </pre>
+        <div className="output-view-selector">
+          <button
+            onClick={() => setOutputView("table")}
+            className={outputView === "table" ? "active" : ""}
+          >
+            Table
+          </button>
+          <button
+            onClick={() => setOutputView("json")}
+            className={outputView === "json" ? "active" : ""}
+          >
+            JSON
+          </button>
+          <button
+            onClick={() => setOutputView("binary")}
+            className={outputView === "binary" ? "active" : ""}
+          >
+            Binary
+          </button>
+        </div>
+        <div className="output-content">
+          {outputView === "table" && renderTableView()}
+          {outputView === "json" && renderJsonView()}
+          {outputView === "binary" && renderBinaryView()}
+        </div>
       </div>
     );
   };

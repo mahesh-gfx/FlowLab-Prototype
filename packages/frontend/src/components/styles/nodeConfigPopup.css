@@ -175,3 +175,28 @@
   font-size: 12px;
   line-height: 1.5;
 }
+
+.output-view-selector {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.output-view-selector button {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.output-view-selector button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.output-content {
+  border: 1px solid #ccc;
+  padding: 10px;
+  min-height: 200px;
+  overflow: auto;
+}
