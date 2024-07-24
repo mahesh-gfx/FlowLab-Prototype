@@ -70,8 +70,8 @@ export interface NodeProperty {
   description: string;
   options?: { name: string; value: any }[];
   displayOptions?: {
-    show?: Record<string, any[]>;
-    hide?: Record<string, any[]>;
+    show?: Record<string, any>;
+    hide?: Record<string, any>;
   };
   [key: string]: any;
 }

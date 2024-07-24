@@ -41,9 +41,13 @@ export class StartNode extends BaseNode {
 
   async execute(inputs: Record<string, any>) {
     return {
-      main: {
-        message: "Workflow started",
-        workflowName: this.data.workflowName,
+      data: {
+        json: {
+          message: "Workflow started",
+          workflowName: this.data.workflowName,
+          description: this.data.description,
+        },
+        binary: null,
       },
     };
   }

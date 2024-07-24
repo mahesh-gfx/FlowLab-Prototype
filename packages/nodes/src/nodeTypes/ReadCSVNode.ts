@@ -41,11 +41,9 @@ export class ReadCSVNode extends BaseNode {
     }
 
     try {
-      // Remove the data:application/octet-stream;base64, prefix if present
       const base64Content =
         dataSource.content.split(",")[1] || dataSource.content;
       const csvData = Buffer.from(base64Content, "base64").toString("utf-8");
-
       const parsedData = Papa.parse(csvData, {
         header: true,
         dynamicTyping: true,
@@ -56,19 +54,15 @@ export class ReadCSVNode extends BaseNode {
         console.warn("CSV parsing errors:", parsedData.errors);
       }
 
-      return { data: parsedData.data };
+      return {
+        data: {
+          json: parsedData.data,
+          binary: null,
+        },
+      };
     } catch (error) {
       console.error("Error reading CSV file:", error);
       throw new Error("Failed to read CSV file");
     }
-  }
-
-  private readFile(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsText(file);
-    });
   }
 }

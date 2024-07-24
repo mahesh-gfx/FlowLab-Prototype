@@ -71,7 +71,11 @@ export class InputNode extends BaseNode {
     }
 
     // Placeholder for other input types
-    return { data: "No data available" };
+    return {
+      data: {
+        json: { message: "No data available" },
+      },
+    };
   }
 
   private readFile(file: File): Promise<string> {
