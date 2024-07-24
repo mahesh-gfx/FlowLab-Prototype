@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Node } from "reactflow";
+import { FixedSizeList as List } from "react-window";
+import AutoSizer, { Size } from "react-virtualized-auto-sizer";
 import { NodeData, NodeProperty } from "@data-viz-tool/shared";
-import DataTable from "react-data-table-component";
+import VirtualizedTable from "./VirtualizedTable";
 import "./styles/nodeConfigPopup.css";
 
 interface NodeConfigPopupProps {
@@ -148,36 +150,74 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   };
 
   const renderOutput = (): JSX.Element => {
-    const executionResult = node.data.executionResult;
+    const executionResult = node.data.executionResult?.data;
 
     if (!executionResult) {
       return <div>No output available</div>;
     }
 
-    const renderTableView = (): JSX.Element => {
-      console.log("Execution Result: ", executionResult);
-      if (Array.isArray(executionResult)) {
-        const columns = Object.keys(executionResult[0] || {}).map((key) => ({
-          name: key,
-          selector: (row: any) => row[key],
-        }));
-        return <DataTable columns={columns} data={executionResult} />;
+    const renderTableView = () => {
+      const jsonData = executionResult.json;
+      if (typeof jsonData === "object" && jsonData !== null) {
+        let data: any[];
+
+        if (Array.isArray(jsonData)) {
+          data = jsonData;
+        } else if (typeof jsonData === "object") {
+          data = Object.values(jsonData);
+        } else {
+          return <div>Data is not in a suitable format for table view</div>;
+        }
+
+        if (data.length === 0) {
+          return <div>No data available</div>;
+        }
+
+        return <VirtualizedTable data={data} />;
       }
       return <div>Data is not in a suitable format for table view</div>;
     };
 
-    const renderJsonView = (): JSX.Element => {
-      return <pre>{JSON.stringify(executionResult, null, 2)}</pre>;
+    const renderJsonView = () => {
+      const jsonData = JSON.stringify(executionResult, null, 2);
+      const lines = jsonData.split("\n");
+
+      const Row = ({
+        index,
+        style,
+      }: {
+        index: number;
+        style: React.CSSProperties;
+      }) => (
+        <div style={style} className="json-line">
+          {lines[index]}
+        </div>
+      );
+
+      return (
+        <div style={{ height: "400px" }}>
+          <AutoSizer>
+            {({ height, width }: { height: number; width: number }) => (
+              <List
+                height={height}
+                itemCount={lines.length}
+                itemSize={20}
+                width={width}
+                style={{ fontSize: "12px" }}
+              >
+                {Row}
+              </List>
+            )}
+          </AutoSizer>
+        </div>
+      );
     };
 
-    const renderBinaryView = (): JSX.Element => {
-      if (
-        typeof executionResult === "string" &&
-        executionResult.startsWith("data:")
-      ) {
-        return <img src={executionResult} alt="Binary data" />;
+    const renderBinaryView = () => {
+      if (executionResult.binary) {
+        return <img src={executionResult.binary} alt="Binary data" />;
       }
-      return <div>Data is not in a suitable format for binary view</div>;
+      return <div>No binary data available</div>;
     };
 
     return (

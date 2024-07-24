@@ -31,7 +31,7 @@
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  max-width: 400px;
+  max-width: 70vw;
   width: 100%;
 }
 
@@ -195,8 +195,27 @@
 }
 
 .output-content {
-  border: 1px solid #ccc;
-  padding: 10px;
-  min-height: 200px;
-  overflow: auto;
+  margin-top: 10px;
+}
+
+.table-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.header-row {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+.table-cell {
+  flex: 1;
+  padding: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.output-content {
+  margin-top: 10px;
 }
