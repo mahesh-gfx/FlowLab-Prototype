@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "lerna run build",
+    "build-nodes": "npm run build --workspace=@data-viz-tool/nodes && npm i --workspace=@data-viz-tool/backend && npm run build --workspace=@data-viz-tool/backend && npm i --workspace=@data-viz-tool/frontend && npm i --workspace=@data-viz-tool/frontend",
     "start": "lerna run start --stream",
     "start:frontend": "npm run start --workspace=@data-viz-tool/frontend",
     "start:backend": "npm run start --workspace=@data-viz-tool/backend",

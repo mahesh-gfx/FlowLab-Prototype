@@ -413,7 +413,16 @@ const WorkflowCanvas: React.FC = () => {
                 setNodes((nds) =>
                   nds.map((node) =>
                     node.id === nodeId
-                      ? { ...node, data: { ...node.data, ...newData } }
+                      ? {
+                          ...node,
+                          data: {
+                            ...node.data,
+                            properties: {
+                              ...node.data.properties,
+                              ...newData.properties,
+                            },
+                          },
+                        }
                       : node
                   )
                 );

@@ -25,6 +25,7 @@ export class WorkflowService {
     const nodeInstances: Record<string, NodeInstance> = {};
 
     // console.log("WorkflowNodes: ", workflowNodes);
+    console.log("WorkflowData: ", workflowData);
 
     // Create node instances
     for (const node of workflowData.nodes) {

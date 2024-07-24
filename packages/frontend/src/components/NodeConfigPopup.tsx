@@ -141,7 +141,9 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
     return (
       <div>
         <h3>Output</h3>
-        <pre>{JSON.stringify(node.data.executionResult, null, 2)}</pre>
+        <pre style={{ maxHeight: "300px", overflowY: "scroll" }}>
+          {JSON.stringify(node.data.executionResult, null, 2)}
+        </pre>
       </div>
     );
   };

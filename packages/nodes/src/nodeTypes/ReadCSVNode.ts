@@ -34,14 +34,18 @@ export class ReadCSVNode extends BaseNode {
   }
 
   async execute(inputs: Record<string, any>) {
-    const { dataSource } = this.data;
+    const dataSource = this.data.properties?.dataSource;
 
-    if (!dataSource) {
+    if (!dataSource || !dataSource.content) {
       throw new Error("No CSV file provided");
     }
 
     try {
-      const csvData = await this.readFile(dataSource);
+      // Remove the data:application/octet-stream;base64, prefix if present
+      const base64Content =
+        dataSource.content.split(",")[1] || dataSource.content;
+      const csvData = Buffer.from(base64Content, "base64").toString("utf-8");
+
       const parsedData = Papa.parse(csvData, {
         header: true,
         dynamicTyping: true,
