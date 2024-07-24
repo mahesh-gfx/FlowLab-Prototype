@@ -1,5 +1,3 @@
-// packages/shared/src/types/WorkflowStructure.ts
-
 export interface NodeData {
   label: string;
   type: string;
@@ -25,4 +23,18 @@ export interface WorkflowEdge {
 export interface WorkflowStructure {
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
+}
+
+export interface NodeProperty {
+  displayName: string;
+  name: string;
+  type: string;
+  default: any;
+  description: string;
+  options?: Array<{ name: string; value: string }>;
+  displayOptions?: {
+    show: {
+      [key: string]: string[];
+    };
+  };
 }

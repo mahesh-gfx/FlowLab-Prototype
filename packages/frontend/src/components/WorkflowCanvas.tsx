@@ -13,7 +13,6 @@ import ReactFlow, {
   Handle,
   Position,
   ReactFlowInstance,
-  NodeChange,
   MiniMap,
 } from "reactflow";
 import "reactflow/dist/style.css";
@@ -22,26 +21,26 @@ import {
   NodeData,
   WorkflowNode,
   WorkflowEdge,
+  NodeProperty,
 } from "@data-viz-tool/shared";
 import { StartNode } from "@data-viz-tool/nodes";
 import NodePanel from "./NodePanel";
 import NodeConfigPopup from "./NodeConfigPopup";
 import { getNodeTypes } from "../api/getNodeTypes";
 import { executeWorkflow } from "../api/executeWorkflow";
-import { saveAs } from "file-saver";
 import PopupMessage from "./PopupMessage";
+import { saveAs } from "file-saver";
 
 interface NodeDefinition {
+  name: string;
+  displayName: string;
+  description: string;
+  icon: string;
+  color: string;
   inputs: string[];
   outputs: string[];
-  properties: Array<{
-    name: string;
-    displayName: string;
-    type: string;
-    default: any;
-  }>;
-  displayName: string;
-  color: string;
+  properties: NodeProperty[];
+  version: number;
 }
 
 interface ExecutionResult {
@@ -95,10 +94,9 @@ const WorkflowCanvas: React.FC = () => {
   }, []);
 
   const nodeTypes = React.useMemo(() => {
-    return {
-      StartNode: React.memo((props: NodeProps<NodeData>) => {
+    return Object.entries(nodeDefinitions).reduce((acc, [key, def]) => {
+      acc[key] = React.memo((props: NodeProps<NodeData>) => {
         const { data } = props;
-        const def = StartNode.getNodeDefinition();
         return (
           <div
             className="react-flow__node-default"
@@ -110,111 +108,38 @@ const WorkflowCanvas: React.FC = () => {
               backgroundColor: def.color,
             }}
           >
-            <div style={{ fontWeight: "bold" }}>{data.label}</div>
-            {def.properties.map((prop) => (
-              <div key={prop.name}>
-                <strong>{prop.displayName}:</strong>{" "}
-                {JSON.stringify(
-                  data.properties?.[prop.name] ?? prop.default ?? ""
-                )}
-              </div>
-            ))}
             {def.inputs.map((input, index) => (
               <Handle
                 key={`input-${index}`}
                 type="target"
                 position={Position.Left}
                 id={input}
-                style={{ top: `${(index + 1) * 25}%` }}
+                style={{
+                  top: `${((index + 1) / (def.inputs.length + 1)) * 100}%`,
+                }}
               />
             ))}
+            <div style={{ fontWeight: "bold" }}>{data.label}</div>
+            {data.error && (
+              <div style={{ color: "red", fontSize: "10px" }}>{data.error}</div>
+            )}
             {def.outputs.map((output, index) => (
               <Handle
                 key={`output-${index}`}
                 type="source"
                 position={Position.Right}
                 id={output}
-                style={{ top: `${(index + 1) * 25}%` }}
+                style={{
+                  top: `${((index + 1) / (def.outputs.length + 1)) * 100}%`,
+                }}
               />
             ))}
           </div>
         );
-      }),
-      ...Object.entries(nodeDefinitions).reduce((acc, [key, def]) => {
-        acc[key] = React.memo((props: NodeProps<NodeData>) => {
-          const { data, id } = props;
-          return (
-            <div
-              className="react-flow__node-default"
-              style={{
-                padding: "10px",
-                borderRadius: "3px",
-                width: 180,
-                fontSize: "12px",
-                backgroundColor: def.color,
-              }}
-            >
-              {def.inputs.map((input, index) => (
-                <Handle
-                  key={`input-${index}`}
-                  type="target"
-                  position={Position.Left}
-                  id={input}
-                  style={{ top: `${(index + 1) * 25}%` }}
-                />
-              ))}
-              <div style={{ fontWeight: "bold" }}>{data.label}</div>
-              {def.properties.map((prop) => (
-                <div key={prop.name}>
-                  <strong>{prop.displayName}:</strong>{" "}
-                  {JSON.stringify(
-                    data.properties?.[prop.name] ?? prop.default ?? ""
-                  )}
-                </div>
-              ))}
-              {executionResults && executionResults[props.id] && (
-                <div>
-                  <strong>Result:</strong>{" "}
-                  {JSON.stringify(executionResults[props.id])}
-                </div>
-              )}
-              {def.outputs.map((output, index) => (
-                <Handle
-                  key={`output-${index}`}
-                  type="source"
-                  position={Position.Right}
-                  id={output}
-                  style={{ top: `${(index + 1) * 25}%` }}
-                />
-              ))}
-              {id !== "start-node" && (
-                <button
-                  style={{
-                    position: "absolute",
-                    top: "5px",
-                    right: "5px",
-                    background: "red",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "20px",
-                    height: "20px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() =>
-                    setNodes((nds) => nds.filter((node) => node.id !== id))
-                  }
-                >
-                  X
-                </button>
-              )}
-            </div>
-          );
-        });
-        return acc;
-      }, {} as Record<string, React.ComponentType<NodeProps<NodeData>>>),
-    };
-  }, [nodeDefinitions, executionResults, setNodes]);
+      });
+      return acc;
+    }, {} as Record<string, React.ComponentType<NodeProps<NodeData>>>);
+  }, [nodeDefinitions]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -234,8 +159,6 @@ const WorkflowCanvas: React.FC = () => {
         const reactFlowBounds =
           reactFlowWrapper.current.getBoundingClientRect();
         const type = event.dataTransfer.getData("application/reactflow");
-        // console.log("Type: ", type);
-        // console.log("Event: ", event);
 
         // Prevent adding multiple start nodes
         if (
@@ -252,38 +175,23 @@ const WorkflowCanvas: React.FC = () => {
         });
 
         const nodeDefinition = nodeDefinitions[type];
-
         const newNode: Node<NodeData> = {
           id: `${type}-${nodes.length + 1}`,
           type,
           position,
           data: {
-            label: nodeDefinition.displayName || type,
+            label: nodeDefinition.displayName,
             type,
-            properties: nodeDefinition.properties.reduce<Record<string, any>>(
-              (acc, prop) => {
-                acc[prop.name] = prop.default;
-                return acc;
-              },
-              {}
-            ),
+            properties: nodeDefinition.properties.reduce((acc, prop) => {
+              acc[prop.name] = prop.default;
+              return acc;
+            }, {} as Record<string, any>),
           },
         };
         setNodes((nds) => nds.concat(newNode));
       }
     },
     [reactFlowInstance, nodes, setNodes, nodeDefinitions]
-  );
-
-  const onNodesChangeCustom = useCallback(
-    (changes: NodeChange | any) => {
-      const filteredChanges = changes.filter(
-        (change: NodeChange) =>
-          !(change.type === "remove" && change.id === "start-node")
-      );
-      onNodesChange(filteredChanges);
-    },
-    [onNodesChange]
   );
 
   const onNodeDoubleClick = useCallback(
@@ -303,13 +211,13 @@ const WorkflowCanvas: React.FC = () => {
 
   const mapToWorkflowNode = (node: Node<NodeData>): WorkflowNode => ({
     ...node,
-    type: node.type || "", // Ensure type is always a string
+    type: node.type || "",
   });
 
   const mapToWorkflowEdge = (edge: Edge): WorkflowEdge => ({
     ...edge,
-    sourceHandle: edge.sourceHandle || undefined, // Convert null to undefined
-    targetHandle: edge.targetHandle || undefined, // Convert null to undefined
+    sourceHandle: edge.sourceHandle || undefined,
+    targetHandle: edge.targetHandle || undefined,
   });
 
   const onExport = useCallback(() => {
@@ -385,27 +293,51 @@ const WorkflowCanvas: React.FC = () => {
           )
           .map(mapToWorkflowEdge),
       };
-
       setIsExecuting(true);
+      setExecutionStatus("Executing workflow...");
       executeWorkflow(workflowData)
         .then((response) => {
           console.log("Workflow execution response:", response);
+          setIsExecuting(false);
           if (response.result) {
             setExecutionResults(response.result);
+            setNodes((nds) =>
+              nds.map((node) => ({
+                ...node,
+                data: {
+                  ...node.data,
+                  executionResult: response.result[node.id],
+                },
+              }))
+            );
             setIsExecuting(false);
+            setExecutionStatus("Workflow execution completed successfully.");
           }
           if (response.errors) {
             setExecutionErrors(response.errors);
+            setNodes((nds) =>
+              nds.map((node) => ({
+                ...node,
+                data: {
+                  ...node.data,
+                  error: response.errors.find(
+                    (e: ExecutionError) => e.nodeId === node.id
+                  )?.error,
+                },
+              }))
+            );
             setIsExecuting(false);
+            setExecutionStatus("Workflow execution completed with errors.");
           }
         })
         .catch((error) => {
           console.error("Workflow execution failed:", error);
           setExecutionErrors([{ nodeId: "global", error: error.message }]);
           setIsExecuting(false);
+          setExecutionStatus("Workflow execution failed.");
         });
     }
-  }, [reactFlowInstance]);
+  }, [reactFlowInstance, setNodes]);
 
   return (
     <ReactFlowProvider>
@@ -413,7 +345,7 @@ const WorkflowCanvas: React.FC = () => {
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChangeCustom}
+          onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onInit={setReactFlowInstance}
@@ -466,21 +398,28 @@ const WorkflowCanvas: React.FC = () => {
             {isExecuting ? "Executing workflow..." : "Execute Workflow"}
           </button>
         </div>
-        {selectedNode && (
-          <NodeConfigPopup
-            node={selectedNode}
-            onClose={() => setSelectedNode(null)}
-            onUpdate={(nodeId, newData) => {
-              setNodes((nds) =>
-                nds.map((node) =>
-                  node.id === nodeId
-                    ? { ...node, data: { ...node.data, ...newData } }
-                    : node
-                )
-              );
-            }}
-          />
-        )}
+        {selectedNode &&
+          selectedNode.type &&
+          nodeDefinitions[selectedNode.type] && (
+            <NodeConfigPopup
+              node={selectedNode}
+              nodeDefinition={
+                nodeDefinitions[
+                  selectedNode.type as keyof typeof nodeDefinitions
+                ]
+              }
+              onClose={() => setSelectedNode(null)}
+              onUpdate={(nodeId, newData) => {
+                setNodes((nds) =>
+                  nds.map((node) =>
+                    node.id === nodeId
+                      ? { ...node, data: { ...node.data, ...newData } }
+                      : node
+                  )
+                );
+              }}
+            />
+          )}
         {executionStatus && (
           <PopupMessage
             message={executionStatus}

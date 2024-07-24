@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Node } from "reactflow";
-import { NodeData } from "@data-viz-tool/shared";
+import { NodeData, NodeProperty } from "@data-viz-tool/shared";
 import "./styles/nodeConfigPopup.css";
 
 interface NodeConfigPopupProps {
   node: Node<NodeData>;
+  nodeDefinition: {
+    properties: NodeProperty[];
+  };
   onClose: () => void;
   onUpdate: (nodeId: string, newData: Partial<NodeData>) => void;
 }
 
 const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   node,
+  nodeDefinition,
   onClose,
   onUpdate,
 }) => {
+  const [activeTab, setActiveTab] = useState<"config" | "output">("config");
   const [config, setConfig] = useState<Partial<NodeData>>({});
 
   useEffect(() => {
@@ -35,25 +40,118 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
     onClose();
   };
 
+  const renderConfigurationForm = () => {
+    return nodeDefinition.properties.map((prop) => {
+      const value = config.properties?.[prop.name] || prop.default;
+      switch (prop.type) {
+        case "string":
+        case "text":
+          return (
+            <div key={prop.name} className="form-group">
+              <label htmlFor={prop.name}>{prop.displayName}</label>
+              <input
+                type={prop.type === "string" ? "text" : "textarea"}
+                id={prop.name}
+                value={value}
+                onChange={(e) => handleChange(prop.name, e.target.value)}
+              />
+            </div>
+          );
+        case "number":
+          return (
+            <div key={prop.name} className="form-group">
+              <label htmlFor={prop.name}>{prop.displayName}</label>
+              <input
+                type="number"
+                id={prop.name}
+                value={value}
+                onChange={(e) =>
+                  handleChange(prop.name, parseFloat(e.target.value))
+                }
+              />
+            </div>
+          );
+        case "boolean":
+          return (
+            <div key={prop.name} className="form-group">
+              <label htmlFor={prop.name}>{prop.displayName}</label>
+              <input
+                type="checkbox"
+                id={prop.name}
+                checked={value}
+                onChange={(e) => handleChange(prop.name, e.target.checked)}
+              />
+            </div>
+          );
+        case "options":
+          return (
+            <div key={prop.name} className="form-group">
+              <label htmlFor={prop.name}>{prop.displayName}</label>
+              <select
+                id={prop.name}
+                value={value}
+                onChange={(e) => handleChange(prop.name, e.target.value)}
+              >
+                {prop.options?.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        case "file":
+          return (
+            <div key={prop.name} className="form-group">
+              <label htmlFor={prop.name}>{prop.displayName}</label>
+              <input
+                type="file"
+                id={prop.name}
+                onChange={(e) =>
+                  handleChange(prop.name, e.target.files?.[0] || null)
+                }
+              />
+            </div>
+          );
+        default:
+          return null;
+      }
+    });
+  };
+
+  const renderOutput = () => {
+    return (
+      <div>
+        <h3>Output</h3>
+        <pre>{JSON.stringify(node.data.executionResult, null, 2)}</pre>
+      </div>
+    );
+  };
+
   return (
     <div className="node-config-popup-wrapper">
       <div className="node-config-popup">
-        <span className="node-config-title">{node.data.label}</span>
-        <span className="node-config-sub-title">Configuration</span>
-        <div className="node-config-form">
-          {Object.entries(node.data.properties || {}).map(([key, value]) => {
-            return (
-              <div key={key} className="node-config-form-group">
-                <label className="node-config-label">{key} </label>
-                <input
-                  type="text"
-                  className="node-config-input"
-                  value={config.properties?.[key] || ""}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                />
-              </div>
-            );
-          })}
+        <h2 className="node-config-title">{node.data.label} Configuration</h2>
+        <div className="node-config-tabs">
+          <button
+            className={`node-config-tab ${
+              activeTab === "config" ? "active" : ""
+            }`}
+            onClick={() => setActiveTab("config")}
+          >
+            Configuration
+          </button>
+          <button
+            className={`node-config-tab ${
+              activeTab === "output" ? "active" : ""
+            }`}
+            onClick={() => setActiveTab("output")}
+          >
+            Output
+          </button>
+        </div>
+        <div className="node-config-content">
+          {activeTab === "config" ? renderConfigurationForm() : renderOutput()}
         </div>
         <div className="node-config-actions">
           <button
