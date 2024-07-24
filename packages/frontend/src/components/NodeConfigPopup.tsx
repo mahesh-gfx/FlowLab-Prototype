@@ -35,8 +35,25 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
     }));
   };
 
+  const handleFileChange = (propertyName: string, file: File | null) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        handleChange(propertyName, {
+          name: file.name,
+          content: result,
+        });
+      };
+      reader.readAsDataURL(file); // Read file as base64 string
+    } else {
+      handleChange(propertyName, null);
+    }
+  };
+
   const handleSubmit = () => {
     onUpdate(node.id, config);
+    console.log("All configs: ", config);
     onClose();
   };
 
@@ -108,9 +125,10 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
                 type="file"
                 id={prop.name}
                 onChange={(e) =>
-                  handleChange(prop.name, e.target.files?.[0] || null)
+                  handleFileChange(prop.name, e.target.files?.[0] || null)
                 }
               />
+              {value && value.name && <div>Uploaded file: {value.name}</div>}
             </div>
           );
         default:

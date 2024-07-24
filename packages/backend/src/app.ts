@@ -11,7 +11,8 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet()); // Adds various HTTP headers for security
 app.use(cors()); // Enable CORS for all routes
-app.use(express.json()); // Parse JSON request bodies
+app.use(express.json({ limit: "200mb" })); // Parse JSON request bodies
+app.use(express.urlencoded({ limit: "200mb", extended: true }));
 app.use(morgan("dev")); // HTTP request logger
 
 // Routes
