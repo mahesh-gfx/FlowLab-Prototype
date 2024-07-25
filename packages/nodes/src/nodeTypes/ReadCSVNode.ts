@@ -33,10 +33,10 @@ export class ReadCSVNode extends BaseNode {
     return ReadCSVNode.getNodeDefinition();
   }
 
-  async execute(inputs: Record<string, any>) {
+  async execute(inputs: Record<string, any>): Promise<any> {
     const dataSource = this.data.properties?.dataSource;
-
     if (!dataSource || !dataSource.content) {
+      console.error("No CSV file provided");
       throw new Error("No CSV file provided");
     }
 

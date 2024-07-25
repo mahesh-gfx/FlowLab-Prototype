@@ -30,6 +30,7 @@ import { getNodeTypes } from "../api/getNodeTypes";
 import { executeWorkflow } from "../api/executeWorkflow";
 import PopupMessage from "./PopupMessage";
 import { saveAs } from "file-saver";
+import "./styles/workflowCanvas.css";
 
 interface NodeDefinition {
   name: string;
@@ -76,8 +77,7 @@ const WorkflowCanvas: React.FC = () => {
   const [nodeDefinitions, setNodeDefinitions] = useState<
     Record<string, NodeDefinition>
   >({});
-  const [executionResults, setExecutionResults] =
-    useState<ExecutionResult | null>(null);
+  const [executionResults, setExecutionResults] = useState<ExecutionResult>([]);
   const [executionErrors, setExecutionErrors] = useState<
     ExecutionError[] | null
   >(null);
@@ -120,8 +120,14 @@ const WorkflowCanvas: React.FC = () => {
               />
             ))}
             <div style={{ fontWeight: "bold" }}>{data.label}</div>
+            {data.error && <div className="node-error-symbol" />}
             {data.error && (
-              <div style={{ color: "red", fontSize: "10px" }}>{data.error}</div>
+              <div
+                className="node-error"
+                style={{ color: "red", fontSize: "10px" }}
+              >
+                {data.error}
+              </div>
             )}
             {def.outputs.map((output, index) => (
               <Handle
@@ -276,7 +282,64 @@ const WorkflowCanvas: React.FC = () => {
     return connectedNodes;
   };
 
-  const onExecuteWorkflow = useCallback(() => {
+  const handleNodeExecuted = (data: { nodeId: string; output: any }) => {
+    console.log("Node executed in WorkflowCanvas", data);
+
+    setExecutionResults((prevResults) => ({
+      ...prevResults,
+      [data.nodeId]: data.output,
+    }));
+
+    // Update the node data with the execution result
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === data.nodeId
+          ? { ...node, data: { ...node.data, output: data.output } }
+          : node
+      )
+    );
+  };
+
+  const handleNodeError = (data: { nodeId: string; error: string }) => {
+    setExecutionResults((prevResults) => ({
+      ...prevResults,
+      [data.nodeId]: { error: data.error },
+    }));
+
+    // Update the node data with the error
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === data.nodeId
+          ? { ...node, data: { ...node.data, error: data.error } }
+          : node
+      )
+    );
+
+    setExecutionErrors([{ nodeId: data.nodeId, error: data.error }]);
+    setIsExecuting(false);
+    setExecutionStatus(`Execution failed: Error in node: ${data.nodeId}`);
+  };
+
+  const handleWorkflowCompleted = (state: boolean) => {
+    console.log("Workflow execution completed");
+    setNodes((nds) =>
+      nds.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          executionResult: executionResults[node.id],
+        },
+      }))
+    );
+    setIsExecuting(false);
+    if (state)
+      setExecutionStatus("Workflow execution completed successfully...");
+    else {
+      setExecutionStatus("Workflow execution failed!");
+    }
+  };
+
+  const startWorkflowExecutionV2 = useCallback(() => {
     if (reactFlowInstance) {
       const flow = reactFlowInstance.toObject();
       const connectedNodeIds = getConnectedNodes(flow.nodes, flow.edges);
@@ -293,49 +356,23 @@ const WorkflowCanvas: React.FC = () => {
           )
           .map(mapToWorkflowEdge),
       };
-      setIsExecuting(true);
-      setExecutionStatus("Executing workflow...");
-      executeWorkflow(workflowData)
-        .then((response) => {
-          console.log("Workflow execution response:", response);
-          setIsExecuting(false);
-          if (response.result) {
-            setExecutionResults(response.result);
-            setNodes((nds) =>
-              nds.map((node) => ({
-                ...node,
-                data: {
-                  ...node.data,
-                  executionResult: response.result[node.id],
-                },
-              }))
-            );
-            setIsExecuting(false);
-            setExecutionStatus("Workflow execution completed successfully.");
-          }
-          if (response.errors) {
-            setExecutionErrors(response.errors);
-            setNodes((nds) =>
-              nds.map((node) => ({
-                ...node,
-                data: {
-                  ...node.data,
-                  error: response.errors.find(
-                    (e: ExecutionError) => e.nodeId === node.id
-                  )?.error,
-                },
-              }))
-            );
-            setIsExecuting(false);
-            setExecutionStatus("Workflow execution completed with errors.");
-          }
-        })
-        .catch((error) => {
-          console.error("Workflow execution failed:", error);
-          setExecutionErrors([{ nodeId: "global", error: error.message }]);
-          setIsExecuting(false);
-          setExecutionStatus("Workflow execution failed.");
-        });
+      try {
+        setExecutionResults([]); // Reset results before starting new execution
+        setIsExecuting(true);
+        setExecutionStatus("Executing workflow...");
+        console.log("Executionresults: ", executionResults);
+        executeWorkflow(
+          workflowData,
+          handleNodeExecuted,
+          handleNodeError,
+          handleWorkflowCompleted
+        );
+      } catch (error: any) {
+        console.error("Workflow execution failed:", error);
+        setExecutionErrors([{ nodeId: "global", error: error.message }]);
+        setIsExecuting(false);
+        setExecutionStatus("Workflow execution failed.");
+      }
     }
   }, [reactFlowInstance, setNodes]);
 
@@ -388,7 +425,7 @@ const WorkflowCanvas: React.FC = () => {
             }}
           />
           <button
-            onClick={onExecuteWorkflow}
+            onClick={startWorkflowExecutionV2}
             disabled={isExecuting}
             style={{
               opacity: isExecuting ? 0.5 : 1,

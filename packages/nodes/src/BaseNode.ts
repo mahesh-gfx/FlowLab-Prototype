@@ -6,6 +6,7 @@ export abstract class BaseNode {
   type: string;
   position: { x: number; y: number };
   data: NodeData;
+  output: any;
 
   constructor(node: Partial<WorkflowNode>) {
     this.id = node.id || uuidv4();
@@ -17,6 +18,7 @@ export abstract class BaseNode {
       label: node.data?.label || this.getNodeDefinition().displayName,
       type: this.type,
     };
+    this.output = null; // Initialize output as null
   }
 
   static getNodeDefinition(): NodeDefinition {
@@ -27,7 +29,7 @@ export abstract class BaseNode {
     return (this.constructor as typeof BaseNode).getNodeDefinition();
   }
 
-  abstract execute(inputs: Record<string, any>): Promise<Record<string, any>>;
+  abstract execute(inputs: Record<string, any>): Promise<any>;
 
   getDefaultData(): Partial<NodeData> {
     return {

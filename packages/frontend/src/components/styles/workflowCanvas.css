@@ -1,0 +1,22 @@
+.react-flow__node-default {
+  .node-error {
+    font-size: 10px;
+    font-weight: bold;
+    position: absolute;
+    bottom: -18px;
+  }
+  .node-error-symbol {
+    position: absolute;
+    top: -38px;
+    color: rgb(255, 213, 0);
+    font-size: 30px;
+    width: 100%;
+    transform: translateX(calc(50% - 20px));
+    display: flex;
+  }
+  .node-error-symbol::before {
+    content: "\26A0 ";
+    /* color: red; */
+    /* font-size: 24px; */
+  }
+}

@@ -1,50 +1,85 @@
 import express from "express";
-import { workflowService } from "../services/workflowService";
+import { WorkflowService } from "../services/workflowService";
 import { WorkflowStructure } from "@data-viz-tool/shared";
 
 const router = express.Router();
 
-router.post("/execute-workflow", async (req, res) => {
-  try {
-    const workflowData: WorkflowStructure = req.body;
+router.post("/execute-workflow", (req, res) => {
+  const workflowData: WorkflowStructure = req.body;
+  req.app.locals.pendingWorkflow = workflowData;
+  res.status(200).send("Workflow received");
+});
 
-    // Validate the workflow structure
-    if (
-      !workflowData ||
-      !Array.isArray(workflowData.nodes) ||
-      !Array.isArray(workflowData.edges)
-    ) {
-      return res.status(400).json({ error: "Invalid workflow structure" });
+router.get("/execute-workflow-stream", (req, res) => {
+  const workflowService = new WorkflowService();
+  console.log("SSE connection established");
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+
+  const sendEvent = (event: string, data: any) => {
+    if (!res.finished) {
+      res.write(`event: ${event}\n`);
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
     }
+  };
 
-    // Execute the workflow
-    const result = await workflowService.executeWorkflow(workflowData);
+  const handleNodeExecuted = (data: { nodeId: string; output: any }) =>
+    sendEvent("nodeExecuted", data);
 
-    // Check if any nodes failed to execute
-    const errors = Object.entries(result)
-      .filter(
-        ([_, nodeResult]) =>
-          nodeResult && typeof nodeResult === "object" && "error" in nodeResult
-      )
-      .map(([nodeId, nodeResult]) => ({
-        nodeId,
-        error: (nodeResult as { error: string }).error,
-      }));
+  const handleNodeError = (data: { nodeId: string; error: string }) => {
+    sendEvent("nodeError", data);
+    cleanupAndClose();
+  };
 
-    if (errors.length > 0) {
-      // If there were errors, send them along with the results
-      res.status(207).json({ result, errors });
-    } else {
-      // If all nodes executed successfully, send the results
-      res.json({ result });
-    }
-  } catch (error) {
-    console.error("Error executing workflow:", error);
-    res.status(500).json({
-      error: "An error occurred while executing the workflow",
-      details: (error as Error).message,
-    });
+  const handleWorkflowCompleted = () => {
+    sendEvent("workflowCompleted", {});
+    cleanupAndClose();
+  };
+
+  const handleWorkflowCompletedWithErrors = () => {
+    sendEvent("workflowCompletedWithErrors", {});
+    cleanupAndClose();
+  };
+
+  const cleanupAndClose = () => {
+    cleanupListeners();
+    res.end();
+  };
+
+  const cleanupListeners = () => {
+    workflowService.removeListener("nodeExecuted", handleNodeExecuted);
+    workflowService.removeListener("nodeError", handleNodeError);
+    workflowService.removeListener(
+      "workflowCompleted",
+      handleWorkflowCompleted
+    );
+    workflowService.removeListener(
+      "workflowCompletedWithErrors",
+      handleWorkflowCompletedWithErrors
+    );
+  };
+
+  workflowService.on("nodeExecuted", handleNodeExecuted);
+  workflowService.on("nodeError", handleNodeError);
+  workflowService.on("workflowCompleted", handleWorkflowCompleted);
+  workflowService.on(
+    "workflowCompletedWithErrors",
+    handleWorkflowCompletedWithErrors
+  );
+
+  // Start the workflow execution after the SSE connection is established
+  if (req.app.locals.pendingWorkflow) {
+    workflowService.executeWorkflow(req.app.locals.pendingWorkflow);
+    req.app.locals.pendingWorkflow = null;
   }
+
+  req.on("close", () => {
+    console.log("SSE connection closed");
+    cleanupListeners();
+  });
 });
 
 export default router;

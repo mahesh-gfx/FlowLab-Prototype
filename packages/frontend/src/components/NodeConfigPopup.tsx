@@ -150,8 +150,8 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   };
 
   const renderOutput = (): JSX.Element => {
-    const executionResult = node.data.executionResult?.data;
-
+    const executionResult = node.data.output?.data;
+    console.log("Execution result: ", executionResult);
     if (!executionResult) {
       return <div>No output available</div>;
     }

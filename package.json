@@ -13,8 +13,9 @@
     "start": "lerna run start --stream",
     "start:frontend": "npm run start --workspace=@data-viz-tool/frontend",
     "start:backend": "npm run start --workspace=@data-viz-tool/backend",
+    "dev:backend": "npm run dev --workspace=@data-viz-tool/backend",
     "test": "lerna run test",
-    "dev": "concurrently --names \"frontend,backend\" --prefix-colors \"blue,green\" \"npm:start:frontend\" \"npm:start:backend\""
+    "dev": "concurrently --names \"backend,frontend\" --prefix-colors \"blue,green\" \"npm:dev:backend\" \"npm:start:frontend\""
   },
   "devDependencies": {
     "concurrently": "^6.2.0",

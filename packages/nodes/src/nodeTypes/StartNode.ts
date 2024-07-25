@@ -4,6 +4,7 @@ import { WorkflowNode } from "@data-viz-tool/shared";
 export class StartNode extends BaseNode {
   constructor(node: Partial<WorkflowNode>) {
     super(node);
+    console.log("Start node instance created...");
   }
 
   static getNodeDefinition(): NodeDefinition {
@@ -39,7 +40,8 @@ export class StartNode extends BaseNode {
     return StartNode.getNodeDefinition();
   }
 
-  async execute(inputs: Record<string, any>) {
+  async execute(inputs: Record<string, any>): Promise<any> {
+    console.log("Executing Start Node...");
     return {
       data: {
         json: {
