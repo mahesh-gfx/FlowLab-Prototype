@@ -40,7 +40,7 @@ interface NodeDefinition {
   color: string;
   inputs: string[];
   outputs: string[];
-  properties: NodeProperty[];
+  properties: [NodeProperty | any];
   version: number;
 }
 
@@ -87,8 +87,157 @@ const WorkflowCanvas: React.FC = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
 
+  //TODO: Remove the following method after first prototype user tests
+  const getNodeTypesMock = async (): Promise<Record<string, any>> => {
+    return {
+      StartNode: {
+        name: "StartNode",
+        displayName: "Start",
+        description: "Starting point of the workflow",
+        icon: "play-circle",
+        color: "#4CAF50",
+        inputs: [],
+        outputs: ["output"],
+        properties: [{}],
+        version: 1,
+      },
+      ReadCSVNode: {
+        name: "ReadCSVNode",
+        displayName: "Read CSV File",
+        description: "Reads data from a CSV file",
+        icon: "file-csv",
+        color: "#2196F3",
+        inputs: ["input"],
+        outputs: ["output"],
+        properties: [
+          {
+            name: "filePath",
+            displayName: "File Path",
+            type: "string",
+            default: "",
+          },
+        ],
+        version: 1,
+      },
+      FilterDataNode: {
+        name: "FilterDataNode",
+        displayName: "Filter Data",
+        description: "Filters data based on conditions",
+        icon: "filter",
+        color: "#FF9800",
+        inputs: ["input"],
+        outputs: ["output"],
+        properties: [
+          {
+            name: "condition",
+            displayName: "Filter Condition",
+            type: "string",
+            default: "",
+          },
+        ],
+        version: 1,
+      },
+      DataBinningNode: {
+        name: "DataBinningNode",
+        displayName: "Data Binning",
+        description: "Bins continuous data into discrete categories",
+        icon: "chart-bar",
+        color: "#9C27B0",
+        inputs: ["input"],
+        outputs: ["output"],
+        properties: [
+          {
+            name: "numBins",
+            displayName: "Number of Bins",
+            type: "number",
+            default: 5,
+          },
+        ],
+        version: 1,
+      },
+      DimensionalityReductionNode: {
+        name: "DimensionalityReductionNode",
+        displayName: "Dimensionality Reduction Algorithm",
+        description: "Reduces the dimensionality of the data",
+        icon: "compress-arrows-alt",
+        color: "#E91E63",
+        inputs: ["input"],
+        outputs: ["output"],
+        properties: [
+          {
+            name: "method",
+            displayName: "Reduction Method",
+            type: "string",
+            default: "PCA",
+          },
+        ],
+        version: 1,
+      },
+      Plot2DNode: {
+        name: "Plot2DNode",
+        displayName: "2D Plot",
+        description: "Creates a 2D plot visualization",
+        icon: "chart-line",
+        color: "#00BCD4",
+        inputs: ["input"],
+        outputs: ["output"],
+        properties: [
+          {
+            name: "plotType",
+            displayName: "Plot Type",
+            type: "string",
+            default: "scatter",
+          },
+        ],
+        version: 1,
+      },
+      Plot3DNode: {
+        name: "Plot3DNode",
+        displayName: "3D Plot",
+        description: "Creates a 3D plot visualization",
+        icon: "cube",
+        color: "#8BC34A",
+        inputs: ["input"],
+        outputs: ["output"],
+        properties: [
+          {
+            name: "plotType",
+            displayName: "Plot Type",
+            type: "string",
+            default: "scatter",
+          },
+        ],
+        version: 1,
+      },
+      FeatureImportanceNode: {
+        name: "FeatureImportanceNode",
+        displayName: "Feature Importance",
+        description: "Calculates and visualizes feature importance",
+        icon: "chart-bar",
+        color: "#FF5722",
+        inputs: ["input"],
+        outputs: ["output"],
+        properties: [
+          {
+            name: "method",
+            displayName: "Importance Method",
+            type: "string",
+            default: "correlation",
+          },
+        ],
+        version: 1,
+      },
+    };
+  };
+
   useEffect(() => {
-    getNodeTypes()
+    //TODO: Uncomment the commented code below after first prototype user tests
+    // getNodeTypes()
+    //   .then(setNodeDefinitions)
+    //   .catch((error) => console.error("Error fetching node types:", error));
+
+    //TODO: Remove the code below after first prototype user tests
+    getNodeTypesMock()
       .then(setNodeDefinitions)
       .catch((error) => console.error("Error fetching node types:", error));
   }, []);
@@ -376,6 +525,38 @@ const WorkflowCanvas: React.FC = () => {
     }
   }, [reactFlowInstance, setNodes]);
 
+  const startWorkflowExecutionMock = useCallback(() => {
+    if (reactFlowInstance) {
+      const flow = reactFlowInstance.toObject();
+      const connectedNodeIds = getConnectedNodes(flow.nodes, flow.edges);
+      const workflowData: WorkflowStructure = {
+        nodes: flow.nodes
+          .filter((node) => connectedNodeIds.has(node.id))
+          .map(mapToWorkflowNode),
+        edges: flow.edges
+          .filter(
+            (edge) =>
+              connectedNodeIds.has(edge.source) &&
+              connectedNodeIds.has(edge.target)
+          )
+          .map(mapToWorkflowEdge),
+      };
+
+      setExecutionResults([]); // Reset results before starting new execution
+      setIsExecuting(true);
+      setExecutionStatus("Executing workflow...");
+
+      setTimeout(() => {
+        workflowData.nodes.forEach((node) => {
+          const output = { result: `Executed ${node.type}` };
+          handleNodeExecuted({ nodeId: node.id, output });
+        });
+
+        handleWorkflowCompleted(true);
+      }, 3000); // Simulate a 3-second execution time
+    }
+  }, [reactFlowInstance, handleNodeExecuted, handleWorkflowCompleted]);
+
   return (
     <ReactFlowProvider>
       <div style={{ height: "600px" }} ref={reactFlowWrapper}>
@@ -406,7 +587,10 @@ const WorkflowCanvas: React.FC = () => {
             gap: "10px",
           }}
         >
-          <button onClick={onExport}>Export Workflow</button>
+          {/*
+  //TODO: Uncomment the following after first prototype user tests
+    */}
+          {/* <button onClick={onExport}>Export Workflow</button>
           <label htmlFor="import-workflow">Import Workflow</label>
           <input
             type="file"
@@ -423,13 +607,19 @@ const WorkflowCanvas: React.FC = () => {
                 reader.readAsText(file);
               }
             }}
-          />
+          /> */}
           <button
-            onClick={startWorkflowExecutionV2}
+            // onClick={startWorkflowExecutionV2} //TODO: Uncomment after user test/eval
+            onClick={startWorkflowExecutionMock} //TODO: Comment after user test/eval
             disabled={isExecuting}
             style={{
               opacity: isExecuting ? 0.5 : 1,
               cursor: isExecuting ? "not-allowed" : "pointer",
+              borderRadius: "50px",
+              border: "1px solid blue",
+              padding: "10px 25px",
+              fontWeight: "bold",
+              color: "blue",
             }}
           >
             {isExecuting ? "Executing workflow..." : "Execute Workflow"}
