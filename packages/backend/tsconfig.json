@@ -14,7 +14,9 @@
     "baseUrl": ".",
     "paths": {
       "@data-viz-tool/shared": ["../shared/dist"]
-    }
+    },
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "../shared/**/*"]
