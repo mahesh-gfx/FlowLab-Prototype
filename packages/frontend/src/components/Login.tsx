@@ -17,7 +17,7 @@ const Login: React.FC = () => {
     setError("");
     try {
       const response = await apiLogin(email, password);
-      dispatch(login(response.token));
+      dispatch(login({ token: response.token, user: response.user }));
       navigate("/"); // Redirect to dashboard after login
     } catch (err) {
       setError("Invalid email or password");

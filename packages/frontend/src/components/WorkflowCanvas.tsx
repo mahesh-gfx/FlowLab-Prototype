@@ -31,6 +31,7 @@ import { executeWorkflow } from "../api/executeWorkflow";
 import PopupMessage from "./PopupMessage";
 import { saveAs } from "file-saver";
 import "./styles/workflowCanvas.css";
+import LogoutButton from "./LogoutButton";
 
 interface NodeDefinition {
   name: string;
@@ -378,6 +379,7 @@ const WorkflowCanvas: React.FC = () => {
 
   return (
     <ReactFlowProvider>
+      <LogoutButton />
       <div style={{ height: "600px" }} ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}

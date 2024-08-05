@@ -22,7 +22,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="App">
-        <h1>Data Visualization Workflow Tool</h1>
+        <h1>Information Visualization Workflow Tool</h1>
         <Routes>
           <Route
             path="/"

@@ -6,6 +6,7 @@
     "@reduxjs/toolkit": "^2.2.7",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.7.2",
+    "event-source-polyfill": "^1.0.31",
     "file-saver": "^2.0.5",
     "react": "^18.2.0",
     "react-data-table-component": "^7.6.2",
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@data-viz-tool/nodes": "file:../nodes",
     "@data-viz-tool/shared": "file:../shared",
+    "@types/event-source-polyfill": "^1.0.5",
     "@types/file-saver": "^2.0.7",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",

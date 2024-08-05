@@ -69,7 +69,11 @@ export class AuthService {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
       expiresIn: JWT_EXPIRATION,
     });
-    return { status: 201, token };
+    return {
+      status: 201,
+      token,
+      user: `${user.firstName + " " + user.lastName}`,
+    };
   }
 
   verifyToken(token: string) {
