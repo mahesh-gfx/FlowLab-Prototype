@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AppDataSource } from "../data-source";
 import { User } from "../entity/User";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || "1h"; // Default to 1 hour if not set
@@ -100,6 +100,13 @@ export class AuthService {
     } catch (error) {
       res.status(401).send({ message: "Invalid token" });
     }
+  }
+
+  getUserFromAuthHeader(authHeader: any) {
+    const token = authHeader?.split(" ")[1] as string;
+    const user = authService.verifyToken(token) as JwtPayload;
+    if (user?.userId != null) return user?.userId as number;
+    else throw Error("No user found!");
   }
 }
 

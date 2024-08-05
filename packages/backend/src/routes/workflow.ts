@@ -1,17 +1,40 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { WorkflowService } from "../services/workflowService";
 import { WorkflowStructure } from "@data-viz-tool/shared";
+import authService from "../services/authService";
+import { JwtPayload } from "jsonwebtoken";
 
 const router = express.Router();
+const workflowService = new WorkflowService();
 
-router.post("/execute-workflow", (req, res) => {
+router.post("/execute-workflow", async (req: Request, res: Response) => {
   const workflowData: WorkflowStructure = req.body;
-  req.app.locals.pendingWorkflow = workflowData;
-  res.status(200).send("Workflow received");
+
+  //Save workflow before executing and return the saved workflow id
+  const workflowName = workflowData.nodes[0].data.properties?.workflowName;
+  const workflowdescription =
+    workflowData.nodes[0].data.properties?.description;
+
+  const userId = authService.getUserFromAuthHeader(req.headers.authorization);
+
+  const response = await workflowService.saveWorkflow(
+    workflowName,
+    workflowdescription,
+    userId,
+    workflowData.nodes,
+    workflowData.edges
+  );
+
+  console.log("Save workflow response: ", response);
+
+  if (response != null) {
+    req.app.locals.pendingWorkflow = workflowData;
+    req.app.locals.authorization = req.headers.authorization;
+    res.status(200).send("Workflow received");
+  } else res.status(500).send("Error saving workflow before execution!");
 });
 
 router.get("/execute-workflow-stream", (req, res) => {
-  const workflowService = new WorkflowService();
   console.log("SSE connection established");
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
@@ -82,4 +105,27 @@ router.get("/execute-workflow-stream", (req, res) => {
   });
 });
 
+// router.post("/save-workflow", (req, res) => {
+//   const workflowService = new WorkflowService();
+//   workflowService.saveWorkflow(req, res);
+// });
+
+router.get("/workflows", async (req: Request, res: Response) => {
+  const userId = authService.getUserFromAuthHeader(req.headers.authorization);
+  const data = await workflowService.getWorkflowsByUser(userId);
+  console.log("Workflows: ", data);
+  if (data.data.status == 200) res.status(200).send(data.data);
+  else res.status(data.data.status).send(data.data);
+});
+
+router.get("/workflow-by-id", async (req: Request, res: Response) => {
+  const userId = authService.getUserFromAuthHeader(req.headers.authorization);
+  const data = await workflowService.getWorkflowByIdAndUserId(
+    userId,
+    req.params.workflowId
+  );
+  console.log("Workflow by ID: ", data);
+  if (data.data.status == 200) res.status(200).send(data.data);
+  else res.status(data.data.status).send(data.data);
+});
 export default router;

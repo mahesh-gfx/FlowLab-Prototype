@@ -1,0 +1,47 @@
+.workflow-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.workflow-dashboard-element {
+  cursor: pointer;
+  padding: 15px 30px;
+  margin-bottom: 10px;
+  border: 1px solid #590d82;
+  border-radius: 20px;
+  .workflow-name {
+    font-size: 20px;
+    color: #7100ae;
+  }
+  .workflow-description {
+    color: #292929;
+  }
+  .workflow-created-at,
+  .workflow-updated-at {
+    color: #292929;
+  }
+}
+
+.workflow-dashboard-element:hover {
+  background-color: #f4e0ff;
+}
+
+.create-new-workflow-button {
+  cursor: pointer;
+  border-radius: 50px;
+  border: 1px solid #f25e9c;
+  padding: 10px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #f25e9c;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #fff1f6;
+}
+
+.create-new-workflow-button:hover {
+  background-color: #590d82;
+  color: white;
+  border: 1px solid #590d82;
+}

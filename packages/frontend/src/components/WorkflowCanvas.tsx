@@ -32,6 +32,7 @@ import PopupMessage from "./PopupMessage";
 import { saveAs } from "file-saver";
 import "./styles/workflowCanvas.css";
 import LogoutButton from "./LogoutButton";
+import { getWorkflowById } from "../api/getWorkflowById";
 
 interface NodeDefinition {
   name: string;
@@ -87,8 +88,26 @@ const WorkflowCanvas: React.FC = () => {
     useState<ReactFlowInstance | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
+  const [workflowId, setWorkflowId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Extract the workflow ID from the URL
+    const path = window.location.pathname;
+    const parts = path.split("/");
+    const id = parts[parts.length - 1]; // Get the last part of the path
+
+    if (path.startsWith("/workflow/")) {
+      setWorkflowId(id);
+    }
+
+    if (id != "new")
+      getWorkflowById(id).then((response) => {
+        console.log("Got workflowby id: Nodes", response.data.workflow.nodes);
+        console.log("Got workflowby id: Edges", response.data.workflow.edges);
+        setNodes(response.data.workflow.nodes);
+        setEdges(response.data.workflow.edges);
+      });
+
     getNodeTypes()
       .then(setNodeDefinitions)
       .catch((error) => console.error("Error fetching node types:", error));

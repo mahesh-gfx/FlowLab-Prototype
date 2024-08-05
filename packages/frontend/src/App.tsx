@@ -14,6 +14,8 @@ import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import setupAxiosInterceptors from "./api/axiosInterceptor";
 
+import appLogo from "./assets/images/flowLab.png";
+
 const App: React.FC = () => {
   useEffect(() => {
     setupAxiosInterceptors();
@@ -22,7 +24,9 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="App">
-        <h1>Information Visualization Workflow Tool</h1>
+        <div className="logo">
+          <img src={appLogo} className="app-logo" />
+        </div>
         <Routes>
           <Route
             path="/"
