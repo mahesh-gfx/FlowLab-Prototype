@@ -4,15 +4,16 @@ import authService from "../services/authService";
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, age, email, password } = req.body;
   try {
-    const user = await authService.register(
+    const response = await authService.register(
       firstName,
       lastName,
+      age,
       email,
       password
     );
-    res.status(201).send(user);
+    res.status(response?.status).send(response);
   } catch (error: any) {
     res.status(400).send({ message: error.message });
   }
@@ -21,8 +22,8 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
-    const { token } = await authService.login(email, password);
-    res.send({ token });
+    const { status, token } = await authService.login(email, password);
+    res.status(status).send({ token });
   } catch (error: any) {
     res.status(400).send({ message: error.message });
   }

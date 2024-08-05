@@ -17,16 +17,42 @@ export class AuthService {
   async register(
     firstName: string,
     lastName: string,
+    age: number,
     email: string,
     password: string
-  ) {
+  ): Promise<any> {
     const user = new User();
     user.firstName = firstName;
     user.lastName = lastName;
+    user.age = age;
     user.email = email;
     user.password = password;
 
-    return await this.userRepository.save(user);
+    const userExists = await this.userRepository.count({
+      where: {
+        email: email,
+      },
+    });
+
+    if (userExists > 0) {
+      console.log("user already exists!");
+      throw Error("The user already exists! Try loggin in...");
+    } else {
+      return await this.userRepository
+        .save(user)
+        .then((response) => {
+          console.log("Create user response: ", response);
+          if (response != null)
+            return {
+              status: 201,
+              message: "Registered user successfully!",
+            };
+          else throw new Error("Error registering user! Try again...");
+        })
+        .catch((error: any) => {
+          return { data: { status: 500, message: error.message } };
+        });
+    }
   }
 
   async login(email: string, password: string) {
@@ -43,7 +69,7 @@ export class AuthService {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
       expiresIn: JWT_EXPIRATION,
     });
-    return { token };
+    return { status: 201, token };
   }
 
   verifyToken(token: string) {

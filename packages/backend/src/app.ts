@@ -20,7 +20,11 @@ app.use(express.urlencoded({ limit: "200mb", extended: true }));
 app.use(morgan("dev")); // HTTP request logger
 // Middleware to protect all routes except login, logout, and register
 app.use((req, res, next) => {
-  const unprotectedRoutes = ["/register", "/login", "/logout"];
+  const unprotectedRoutes = [
+    "/api/auth/register",
+    "/api/auth/login",
+    "/api/auth/logout",
+  ];
   if (unprotectedRoutes.includes(req.path)) {
     return next();
   }
@@ -28,7 +32,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/nodes", nodeRoutes);
 app.use("/api/workflow", workflowRoutes);
 

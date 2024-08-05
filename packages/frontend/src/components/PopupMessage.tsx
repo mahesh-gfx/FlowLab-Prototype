@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-interface PopupMessageProps {
+export interface PopupMessageProps {
   message: string;
-  type: "loading" | "error" | "success";
+  type: "loading" | "error" | "success" | "invisible" | string;
   onClose: () => void;
 }
 
@@ -11,10 +11,11 @@ const PopupMessage: React.FC<PopupMessageProps> = ({
   type,
   onClose,
 }) => {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (type === "success") {
+      setVisible(true);
       const timer = setTimeout(() => {
         setVisible(false);
         onClose();
