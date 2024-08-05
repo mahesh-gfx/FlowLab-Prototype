@@ -1,6 +1,9 @@
 .workflow-list {
   list-style-type: none;
   padding: 0;
+  .no-workflow-found {
+    font-size: 20px;
+  }
 }
 
 .workflow-dashboard-element {
@@ -9,21 +12,48 @@
   margin-bottom: 10px;
   border: 1px solid #590d82;
   border-radius: 20px;
-  .workflow-name {
-    font-size: 20px;
-    color: #7100ae;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  .workflow-info {
+    .workflow-name {
+      font-size: 20px;
+      color: #7100ae;
+    }
+    .workflow-description {
+      color: #292929;
+    }
+    .workflow-created-at,
+    .workflow-updated-at {
+      color: #292929;
+    }
   }
-  .workflow-description {
-    color: #292929;
-  }
-  .workflow-created-at,
-  .workflow-updated-at {
-    color: #292929;
+  .delete-workflow-btn-wrapper {
+    padding: 10px;
+    .delete-button {
+      visibility: hidden;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 10px;
+      font-size: 1.5rem;
+      transition: color 0.3s ease;
+      color: #9a9797; /* Default icon color */
+    }
+
+    .delete-button:hover {
+      color: red; /* Icon color on hover */
+    }
   }
 }
 
 .workflow-dashboard-element:hover {
   background-color: #f4e0ff;
+  .delete-workflow-btn-wrapper {
+    .delete-button {
+      visibility: visible;
+    }
+  }
 }
 
 .create-new-workflow-button {

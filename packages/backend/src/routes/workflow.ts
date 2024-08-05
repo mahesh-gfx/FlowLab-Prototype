@@ -2,7 +2,6 @@ import express, { Request, Response } from "express";
 import { WorkflowService } from "../services/workflowService";
 import { WorkflowStructure } from "@data-viz-tool/shared";
 import authService from "../services/authService";
-import { JwtPayload } from "jsonwebtoken";
 
 const router = express.Router();
 const workflowService = new WorkflowService();
@@ -128,4 +127,14 @@ router.get("/workflow-by-id", async (req: Request, res: Response) => {
   if (data.data.status == 200) res.status(200).send(data.data);
   else res.status(data.data.status).send(data.data);
 });
+
+router.delete("/delete-workflow-by-id", async (req: Request, res: Response) => {
+  const userId = authService.getUserFromAuthHeader(req.headers.authorization);
+  const workflowId = req.params.workflowId;
+  console.log("Workflow id for deletion: ", workflowId);
+  const data = await workflowService.deleteWorkflowById(workflowId, userId);
+  if (data.data.status == 200) res.status(200).send(data.data);
+  else res.status(data.data.status).send(data.data);
+});
+
 export default router;

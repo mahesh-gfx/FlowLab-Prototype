@@ -1,13 +1,11 @@
 import { EventEmitter } from "events";
 import { WorkflowStructure, WorkflowNode } from "@data-viz-tool/shared";
 import * as workflowNodes from "@data-viz-tool/nodes";
-import { Request, Response } from "express";
 import { Workflow } from "../entity/Workflow";
 import { User } from "../entity/User";
 import { Node } from "../entity/Node";
 import { Edge } from "../entity/Edge";
 import { AppDataSource } from "../data-source";
-import authService from "./authService";
 
 type NodeInstance = InstanceType<
   (typeof workflowNodes)[keyof typeof workflowNodes]
@@ -271,6 +269,48 @@ export class WorkflowService extends EventEmitter {
           },
         };
       }
+    } catch (error) {
+      console.error(error);
+      return {
+        data: { status: 500, message: "Internal server error!" },
+      };
+    }
+  }
+
+  async deleteWorkflowById(workflowId: string, userId: number | string) {
+    const user = parseInt(userId as string, 10);
+    try {
+      const workflowRepository = AppDataSource.getRepository(Workflow);
+      const nodeRepository = AppDataSource.getRepository(Node);
+      const edgeRepository = AppDataSource.getRepository(Edge);
+
+      const workflow = await workflowRepository.findOne({
+        where: { id: workflowId, user: { id: user } },
+        relations: ["nodes", "edges"],
+      });
+
+      if (!workflow) {
+        return {
+          data: {
+            status: 404,
+            message: `No workflow found with the id ${workflowId} to delete!`,
+          },
+        };
+      }
+
+      // Delete related nodes and edges
+      await nodeRepository.remove(workflow.nodes);
+      await edgeRepository.remove(workflow.edges);
+
+      // Delete the workflow
+      await workflowRepository.remove(workflow);
+
+      return {
+        data: {
+          status: 200,
+          message: `Workflow with id ${workflowId} has been deleted successfully!`,
+        },
+      };
     } catch (error) {
       console.error(error);
       return {
