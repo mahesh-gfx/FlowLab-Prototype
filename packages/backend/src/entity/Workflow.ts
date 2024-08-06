@@ -4,6 +4,8 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from "typeorm";
 import { User } from "./User";
 import { Node } from "./Node";
@@ -29,13 +31,9 @@ export class Workflow {
   @OneToMany(() => Edge, (edge) => edge.workflow, { cascade: true })
   edges!: Edge[];
 
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  @CreateDateColumn({ type: "timestamp" })
   createdAt!: Date;
 
-  @Column({
-    type: "timestamp",
-    default: () => "CURRENT_TIMESTAMP",
-    onUpdate: "CURRENT_TIMESTAMP",
-  })
+  @UpdateDateColumn({ type: "timestamp" })
   updatedAt!: Date;
 }
