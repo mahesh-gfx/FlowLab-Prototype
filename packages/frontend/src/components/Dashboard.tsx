@@ -53,11 +53,10 @@ const Dashboard: React.FC = () => {
     event.stopPropagation();
     console.log("Deleting workflow ", workflowId);
     deleteWorkflowById(workflowId).then((response) => {
-      console.log("Delete workflow response: ", response);
+      setWorkflows((prev) =>
+        prev.filter((workflow) => workflow.id == workflowId)
+      );
     });
-    setWorkflows((prev) =>
-      prev.filter((workflow) => workflow.id == workflowId)
-    );
   };
 
   useEffect(() => {
