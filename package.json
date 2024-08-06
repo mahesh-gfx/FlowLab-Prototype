@@ -5,7 +5,8 @@
     "packages/shared",
     "packages/nodes",
     "packages/backend",
-    "packages/frontend"
+    "packages/frontend",
+    "packages/druidjs"
   ],
   "scripts": {
     "build": "lerna run build",
