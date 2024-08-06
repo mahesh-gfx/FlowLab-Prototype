@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@data-viz-tool/shared": "file:../shared",
-    "@saehrimnir/druidjs": "^0.7.3",
+    "@data-viz-tool/druidjs": "file:../druidjs",
     "papaparse": "^5.4.1",
     "uuid": "^10.0.0"
   },
