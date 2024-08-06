@@ -22,13 +22,15 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   onUpdate,
 }) => {
   const [activeTab, setActiveTab] = useState<"config" | "output">("config");
-  const [config, setConfig] = useState<Partial<NodeData>>({});
+  const [config, setConfig] = useState<Partial<NodeData>>({ properties: {} });
   const [outputView, setOutputView] = useState<"table" | "json" | "binary">(
     "table"
   );
+  const [properties, setProperties] = useState<any>({});
 
   useEffect(() => {
     setConfig(node.data);
+    setProperties(node.data.properties);
   }, [node]);
 
   const handleChange = (propertyName: string, value: any) => {
@@ -38,6 +40,11 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
         ...prev.properties,
         [propertyName]: value,
       },
+    }));
+    console.log("Config: ", config);
+    setProperties((prev: any) => ({
+      ...prev,
+      [propertyName]: value,
     }));
   };
 
@@ -63,11 +70,26 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
     onClose();
   };
 
+  const displayField = (show: any) => {
+    console.log("Show values: ", show, properties);
+    if (show == null) return true;
+    for (const key in show) {
+      if (show[key] && properties.hasOwnProperty(key)) {
+        const commonValues = show[key].filter(
+          (value: any) => properties[key] == value
+        );
+        if (commonValues.length > 0) return true;
+      }
+    }
+    return false;
+  };
+
   const renderConfigurationForm = (): JSX.Element => {
     return (
       <>
         {nodeDefinition.properties.map((prop) => {
           const value = config.properties?.[prop.name] || prop.default;
+          if (!displayField(prop.displayOptions?.show || null)) return null;
           switch (prop.type) {
             case "string":
             case "text":
