@@ -31,6 +31,7 @@ import { saveAs } from "file-saver";
 import { executeWorkflow } from "../api/executeWorkflow";
 import { getWorkflowById } from "../api/getWorkflowById";
 import { getNodeTypes } from "../api/getNodeTypes";
+import D3Node from "../components/nodes/D3Node";
 
 interface NodeDefinition {
   name: string;
@@ -93,7 +94,15 @@ const WorkflowProvider = ({ children }: any) => {
     return Object.entries(nodeDefinitions).reduce((acc, [key, def]) => {
       acc[key] = React.memo((props: NodeProps<NodeData>) => {
         const { id, data, type } = props;
-        return <DefaultNode id={id} data={data} def={def} type={type} />;
+        console.log("NODE TYPES: ", type);
+        switch (type) {
+          case "D3JsNode":
+            console.log("D3 on the workspace");
+            return <D3Node id={id} data={data} def={def} type={type} />;
+
+          default:
+            return <DefaultNode id={id} data={data} def={def} type={type} />;
+        }
       });
       return acc;
     }, {} as Record<string, React.ComponentType<NodeProps<NodeData>>>);

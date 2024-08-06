@@ -1,18 +1,46 @@
+import { useEffect, useRef } from "react";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Handle, Position, useReactFlow } from "reactflow";
+import * as d3 from "d3";
 
-const DefaultNode = ({ id, data, def, type }: any) => {
+const D3Node = ({ id, data, def, type }: any) => {
   const { setNodes } = useReactFlow();
+  const d3Container = useRef(null);
 
   const handleDelete = () => {
-    if (type != "StartNode")
+    if (type !== "StartNode") {
       setNodes((nds) => nds.filter((node) => node.id !== id));
+    }
   };
+
+  useEffect(() => {
+    if (d3Container.current) {
+      // Example: Create a simple bar chart
+      const svg = d3
+        .select(d3Container.current)
+        .append("svg")
+        .attr("width", 160)
+        .attr("height", 100);
+
+      const data = [10, 20, 30, 40, 50];
+
+      svg
+        .selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("x", (d, i) => i * 30)
+        .attr("y", (d) => 100 - d)
+        .attr("width", 25)
+        .attr("height", (d) => d)
+        .attr("fill", "blue");
+    }
+  }, [data]);
 
   return (
     <div
-      className="react-flow__node-default"
+      className=""
       style={{
         padding: "10px",
         borderRadius: "3px",
@@ -33,12 +61,7 @@ const DefaultNode = ({ id, data, def, type }: any) => {
         />
       ))}
       <div style={{ fontWeight: "bold" }}>{data.label}</div>
-      {data.error && <div className="node-error-symbol" />}
-      {data.error && (
-        <div className="node-error" style={{ color: "red", fontSize: "10px" }}>
-          {data.error}
-        </div>
-      )}
+      <div ref={d3Container} className="d3-container"></div>
       {def.outputs.map((output: any, index: any) => (
         <Handle
           key={`output-${index}`}
@@ -51,7 +74,7 @@ const DefaultNode = ({ id, data, def, type }: any) => {
         />
       ))}
       <div className="node-delete-button-wrapper">
-        {type != "StartNode" && (
+        {type !== "StartNode" && (
           <button className="node-delete-button" onClick={handleDelete}>
             <FontAwesomeIcon icon={faTrash} size="2xs" />
           </button>
@@ -61,4 +84,4 @@ const DefaultNode = ({ id, data, def, type }: any) => {
   );
 };
 
-export default DefaultNode;
+export default D3Node;
