@@ -350,7 +350,7 @@ export class WorkflowService extends EventEmitter {
   }
 
   async updateWorkflow(
-    workflowId: string | null,
+    workflowId: string,
     workflowName: string,
     description: string,
     userId: number,
@@ -367,40 +367,32 @@ export class WorkflowService extends EventEmitter {
 
       const user = await userRepository.findOneBy({ id: userId });
       if (!user) {
-        throw Error("Error saving workflow: No user found!");
+        throw Error("Error updating workflow: No user found!");
       }
 
-      let workflow: Workflow;
-      if (workflowId) {
-        workflow = (await workflowRepository.findOne({
-          where: { id: workflowId, user: { id: userId } },
-          relations: ["nodes", "edges"],
-        })) as Workflow;
+      const workflow = await workflowRepository.findOne({
+        where: { id: workflowId, user: { id: userId } },
+        relations: ["nodes", "edges"],
+      });
 
-        if (!workflow) {
-          throw Error(
-            `Error saving workflow: No workflow found with id ${workflowId}!`
-          );
-        }
-
-        // Update workflow details
-        workflow.name = workflowName || "Untitled Workflow";
-        workflow.description = description || "";
-
-        // Remove existing nodes and edges
-        await nodeRepository.remove(workflow.nodes);
-        await edgeRepository.remove(workflow.edges);
-      } else {
-        workflow = new Workflow();
-        workflow.name = workflowName || "Untitled Workflow";
-        workflow.description = description || "";
-        workflow.user = user;
+      if (!workflow) {
+        throw Error(
+          `Error updating workflow: No workflow found with id ${workflowId}!`
+        );
       }
 
-      // Save workflow to get an ID for nodes and edges
+      // Update workflow details
+      workflow.name = workflowName || "Untitled Workflow";
+      workflow.description = description || "";
+
+      // Remove existing nodes and edges
+      await nodeRepository.remove(workflow.nodes);
+      await edgeRepository.remove(workflow.edges);
+
+      // Save updated workflow
       const response = await workflowRepository.save(workflow);
 
-      // Save nodes excluding output properties
+      // Save new nodes excluding output properties
       const nodeEntities = nodes.map((nodeData: any) => {
         const node = new Node();
         node.nodeId = nodeData.id;
@@ -408,23 +400,30 @@ export class WorkflowService extends EventEmitter {
         node.positionX = nodeData.position.x;
         node.positionY = nodeData.position.y;
         node.label = nodeData.data.label;
-        node.properties = nodeData.data.properties;
+
+        // Remove dataSource property if it exists
+        const properties = { ...nodeData.data.properties };
+        if (properties.dataSource) {
+          delete properties.dataSource;
+        }
+        node.properties = properties;
+
         node.workflow = workflow;
         return node;
       });
 
       await nodeRepository.save(nodeEntities);
 
-      // Save edges
+      // Save new edges
       const edgeEntities = edges.map((edgeData: any) => {
         const edge = new Edge();
         edge.source = edgeData.source;
         edge.sourceHandle = edgeData.sourceHandle;
         edge.target = edgeData.target;
         edge.targetHandle = edgeData.targetHandle;
-        edge.workflow = workflow;
         edge.animated = edgeData.animated || false;
         edge.style = edgeData.style || null;
+        edge.workflow = workflow;
         return edge;
       });
 
