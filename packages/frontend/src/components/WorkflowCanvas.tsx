@@ -74,6 +74,8 @@ const WorkflowCanvas: React.FC = () => {
     },
   };
 
+  const connectionLineStyle = { stroke: "#fffff" };
+
   const [nodes, setNodes, onNodesChange] = useNodesState([initialStartNode]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null);
@@ -125,7 +127,10 @@ const WorkflowCanvas: React.FC = () => {
   }, [nodeDefinitions]);
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    (params: Connection) =>
+      setEdges((eds) =>
+        addEdge({ ...params, animated: true, style: { stroke: "#fffff" } }, eds)
+      ),
     [setEdges]
   );
 
@@ -375,6 +380,7 @@ const WorkflowCanvas: React.FC = () => {
           onNodeDoubleClick={onNodeDoubleClick}
           nodeTypes={nodeTypes}
           fitView
+          connectionLineStyle={connectionLineStyle}
         >
           <Controls position="top-right" />
           <Background />

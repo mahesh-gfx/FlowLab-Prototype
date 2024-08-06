@@ -159,6 +159,8 @@ export class WorkflowService extends EventEmitter {
         edge.target = edgeData.target;
         edge.targetHandle = edgeData.targetHandle;
         edge.workflow = workflow;
+        edge.animated = edgeData.animated || false;
+        edge.style = edgeData.style || null;
         return edge;
       });
 
@@ -252,6 +254,8 @@ export class WorkflowService extends EventEmitter {
           target: edge.target,
           targetHandle: edge.targetHandle,
           id: edge.id,
+          animated: edge.animated || false,
+          style: edge.style || null,
         }));
 
         return {
@@ -344,7 +348,7 @@ export class WorkflowService extends EventEmitter {
     nodes: Array<any>,
     edges: Array<any>
   ) {
-    console.log("Updating saved workflow...");
+    console.log("Updating workflow...");
 
     try {
       const userRepository = AppDataSource.getRepository(User);
@@ -410,6 +414,8 @@ export class WorkflowService extends EventEmitter {
         edge.target = edgeData.target;
         edge.targetHandle = edgeData.targetHandle;
         edge.workflow = workflow;
+        edge.animated = edgeData.animated || false;
+        edge.style = edgeData.style || null;
         return edge;
       });
 

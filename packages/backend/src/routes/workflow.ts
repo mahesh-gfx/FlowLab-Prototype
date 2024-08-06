@@ -35,8 +35,6 @@ router.post("/execute-workflow", async (req: Request, res: Response) => {
       workflowData.edges
     );
 
-    console.log("Save workflow response: ", response);
-
     if (response != null) {
       req.app.locals.pendingWorkflow = workflowData;
       req.app.locals.authorization = req.headers.authorization;
@@ -52,8 +50,8 @@ router.post("/execute-workflow", async (req: Request, res: Response) => {
       workflowData.edges
     );
 
-    console.log("Update workflow response: ", response);
     if (response != null) {
+      console.log("Recieved workflow data...");
       req.app.locals.pendingWorkflow = workflowData;
       req.app.locals.authorization = req.headers.authorization;
       res.status(200).send("Workflow received");
@@ -122,6 +120,7 @@ router.get("/execute-workflow-stream", (req, res) => {
 
   // Start the workflow execution after the SSE connection is established
   if (req.app.locals.pendingWorkflow) {
+    console.log("Executing workflow data...");
     workflowService.executeWorkflow(req.app.locals.pendingWorkflow);
     req.app.locals.pendingWorkflow = null;
   }
