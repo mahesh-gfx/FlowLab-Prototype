@@ -55,6 +55,9 @@ const Dashboard: React.FC = () => {
     deleteWorkflowById(workflowId).then((response) => {
       console.log("Delete workflow response: ", response);
     });
+    setWorkflows((prev) =>
+      prev.filter((workflow) => workflow.id == workflowId)
+    );
   };
 
   useEffect(() => {
