@@ -1,0 +1,50 @@
+.workflow-options {
+  display: flex;
+  gap: 10px;
+}
+
+.workflow-button {
+  cursor: pointer;
+  border-radius: 50px;
+  border: 1px solid #f25e9c;
+  padding: 10px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #f25e9c;
+  background-color: #fff1f6;
+}
+
+.workflow-button:hover {
+  background-color: #590d82;
+  color: white;
+  border: 1px solid #590d82;
+}
+
+.workflow-button-light {
+  background-color: #fff;
+  border: none;
+  color: #000;
+  padding: 10px 25px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border-radius: 4px;
+  border-radius: 50px;
+}
+
+.workflow-button-light:hover {
+  background-color: #555;
+  color: white;
+}
+
+.drop-area {
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.drop-area.dragging {
+  border-color: #333;
+  background-color: #f0f0f0;
+}

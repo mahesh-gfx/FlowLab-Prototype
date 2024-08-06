@@ -124,11 +124,12 @@ export class WorkflowService extends EventEmitter {
 
       const user = await userRepository.findOneBy({ id: userId });
       if (!user) {
-        // return res.status(404).json({ message: "User not found" });
         throw Error("Error saving workflow: No user found!");
       }
 
-      const workflow = new Workflow();
+      let workflow: Workflow;
+
+      workflow = new Workflow();
       workflow.name = workflowName || "Untitled Workflow";
       workflow.description = description || "";
       workflow.user = user;
@@ -144,7 +145,15 @@ export class WorkflowService extends EventEmitter {
         node.positionX = nodeData.position.x;
         node.positionY = nodeData.position.y;
         node.label = nodeData.data.label;
-        node.properties = nodeData.data.properties;
+
+        // Remove dataSource property if it exists
+        //(dataSource are files which can be large and hence difficult to write and retrieve from the database, has been causing javascript heap memory exhaustion)
+        const properties = { ...nodeData.data.properties };
+        if (properties.dataSource) {
+          delete properties.dataSource;
+        }
+        node.properties = properties;
+
         node.workflow = workflow;
         return node;
       });
@@ -158,9 +167,9 @@ export class WorkflowService extends EventEmitter {
         edge.sourceHandle = edgeData.sourceHandle;
         edge.target = edgeData.target;
         edge.targetHandle = edgeData.targetHandle;
-        edge.workflow = workflow;
         edge.animated = edgeData.animated || false;
         edge.style = edgeData.style || null;
+        edge.workflow = workflow;
         return edge;
       });
 
@@ -168,7 +177,7 @@ export class WorkflowService extends EventEmitter {
       return response;
     } catch (error) {
       console.error(error);
-      // res.status(500).json({ message: "Internal server error" });
+      throw new Error("Internal server error");
     }
   }
 

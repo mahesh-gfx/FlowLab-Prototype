@@ -53,9 +53,14 @@ const Dashboard: React.FC = () => {
     event.stopPropagation();
     console.log("Deleting workflow ", workflowId);
     deleteWorkflowById(workflowId).then((response) => {
-      setWorkflows((prev) =>
-        prev.filter((workflow) => workflow.id == workflowId)
-      );
+      console.log("Deleted workflow ", workflowId);
+      setWorkflows((prev) => {
+        const newWorkflows = prev.filter(
+          (workflow) => workflow.id !== workflowId
+        );
+        // Ensure a new array reference
+        return [...newWorkflows];
+      });
     });
   };
 
@@ -72,6 +77,12 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="page-container">
+      <button
+        onClick={handleCreateNewWorkflow}
+        className="create-new-workflow-button"
+      >
+        Create New Workflow
+      </button>
       <h3 className="page-title">Your Workflow Executions</h3>
       <ul className="workflow-list">
         {workflows.length > 0 ? (
@@ -112,12 +123,6 @@ const Dashboard: React.FC = () => {
           </span>
         )}
       </ul>
-      <button
-        onClick={handleCreateNewWorkflow}
-        className="create-new-workflow-button"
-      >
-        Create New Workflow
-      </button>
     </div>
   );
 };

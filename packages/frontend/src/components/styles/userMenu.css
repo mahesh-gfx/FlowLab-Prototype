@@ -1,0 +1,8 @@
+.user-menu {
+  display: flex;
+  gap: 10px;
+}
+
+.user-button:hover {
+  background-color: #555;
+}

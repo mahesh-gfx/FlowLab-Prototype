@@ -157,7 +157,7 @@ router.get("/workflow-by-id", async (req: Request, res: Response) => {
 
 router.delete("/delete-workflow-by-id", async (req: Request, res: Response) => {
   const userId = authService.getUserFromAuthHeader(req.headers.authorization);
-  const workflowId = req.params.workflowId;
+  const workflowId = req.body.workflowId;
   console.log("Workflow id for deletion: ", workflowId);
   const data = await workflowService.deleteWorkflowById(workflowId, userId);
   if (data.data.status == 200) res.status(200).send(data.data);
