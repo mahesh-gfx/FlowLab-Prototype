@@ -6,6 +6,7 @@ import { store } from "../store/store"; // Assuming you have a Redux store setup
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
 
 export const executeWorkflow = (
+  workflowId: string,
   workflowData: WorkflowStructure,
   onNodeExecuted: (data: { nodeId: string; output: any }) => void,
   onNodeError: (data: { nodeId: string; error: string }) => void,
@@ -72,11 +73,15 @@ export const executeWorkflow = (
 
   // Start the workflow execution
   axios
-    .post(`${API_URL}/workflow/execute-workflow`, workflowData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    .post(
+      `${API_URL}/workflow/execute-workflow`,
+      { workflowId, workflowData },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
     .then(() => {
       console.log("Workflow execution started");
     })

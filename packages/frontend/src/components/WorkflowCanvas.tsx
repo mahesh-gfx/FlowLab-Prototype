@@ -89,7 +89,7 @@ const WorkflowCanvas: React.FC = () => {
     useState<ReactFlowInstance | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
-  const [workflowId, setWorkflowId] = useState<string | null>(null);
+  const [workflowId, setWorkflowId] = useState<string>("");
 
   useEffect(() => {
     // Extract the workflow ID from the URL
@@ -339,6 +339,7 @@ const WorkflowCanvas: React.FC = () => {
         setExecutionStatus("Executing workflow...");
         console.log("Executionresults: ", executionResults);
         executeWorkflow(
+          workflowId,
           workflowData,
           handleNodeExecuted,
           handleNodeError,
@@ -415,7 +416,7 @@ const WorkflowCanvas: React.FC = () => {
               cursor: isExecuting ? "not-allowed" : "pointer",
             }}
           >
-            {isExecuting ? "Executing workflow..." : "Execute Workflow"}
+            {isExecuting ? "Executing workflow..." : "Save & Execute Workflow"}
           </button>
         </div>
         {selectedNode &&

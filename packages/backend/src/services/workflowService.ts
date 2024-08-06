@@ -318,4 +318,106 @@ export class WorkflowService extends EventEmitter {
       };
     }
   }
+
+  async doesWorkflowExist(
+    workflowId: string,
+    userId: number
+  ): Promise<boolean> {
+    try {
+      const workflowRepository = AppDataSource.getRepository(Workflow);
+      const workflow = await workflowRepository.findOne({
+        where: { id: workflowId, user: { id: userId } },
+      });
+
+      return !!workflow;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  async updateWorkflow(
+    workflowId: string | null,
+    workflowName: string,
+    description: string,
+    userId: number,
+    nodes: Array<any>,
+    edges: Array<any>
+  ) {
+    console.log("Updating saved workflow...");
+
+    try {
+      const userRepository = AppDataSource.getRepository(User);
+      const workflowRepository = AppDataSource.getRepository(Workflow);
+      const nodeRepository = AppDataSource.getRepository(Node);
+      const edgeRepository = AppDataSource.getRepository(Edge);
+
+      const user = await userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw Error("Error saving workflow: No user found!");
+      }
+
+      let workflow: Workflow;
+      if (workflowId) {
+        workflow = (await workflowRepository.findOne({
+          where: { id: workflowId, user: { id: userId } },
+          relations: ["nodes", "edges"],
+        })) as Workflow;
+
+        if (!workflow) {
+          throw Error(
+            `Error saving workflow: No workflow found with id ${workflowId}!`
+          );
+        }
+
+        // Update workflow details
+        workflow.name = workflowName || "Untitled Workflow";
+        workflow.description = description || "";
+
+        // Remove existing nodes and edges
+        await nodeRepository.remove(workflow.nodes);
+        await edgeRepository.remove(workflow.edges);
+      } else {
+        workflow = new Workflow();
+        workflow.name = workflowName || "Untitled Workflow";
+        workflow.description = description || "";
+        workflow.user = user;
+      }
+
+      // Save workflow to get an ID for nodes and edges
+      const response = await workflowRepository.save(workflow);
+
+      // Save nodes excluding output properties
+      const nodeEntities = nodes.map((nodeData: any) => {
+        const node = new Node();
+        node.nodeId = nodeData.id;
+        node.type = nodeData.type;
+        node.positionX = nodeData.position.x;
+        node.positionY = nodeData.position.y;
+        node.label = nodeData.data.label;
+        node.properties = nodeData.data.properties;
+        node.workflow = workflow;
+        return node;
+      });
+
+      await nodeRepository.save(nodeEntities);
+
+      // Save edges
+      const edgeEntities = edges.map((edgeData: any) => {
+        const edge = new Edge();
+        edge.source = edgeData.source;
+        edge.sourceHandle = edgeData.sourceHandle;
+        edge.target = edgeData.target;
+        edge.targetHandle = edgeData.targetHandle;
+        edge.workflow = workflow;
+        return edge;
+      });
+
+      await edgeRepository.save(edgeEntities);
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Internal server error");
+    }
+  }
 }
