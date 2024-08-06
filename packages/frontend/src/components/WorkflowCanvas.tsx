@@ -33,6 +33,7 @@ import { saveAs } from "file-saver";
 import "./styles/workflowCanvas.css";
 import LogoutButton from "./LogoutButton";
 import { getWorkflowById } from "../api/getWorkflowById";
+import DefaultNode from "./nodes/DefaultNode";
 
 interface NodeDefinition {
   name: string;
@@ -116,52 +117,8 @@ const WorkflowCanvas: React.FC = () => {
   const nodeTypes = React.useMemo(() => {
     return Object.entries(nodeDefinitions).reduce((acc, [key, def]) => {
       acc[key] = React.memo((props: NodeProps<NodeData>) => {
-        const { data } = props;
-        return (
-          <div
-            className="react-flow__node-default"
-            style={{
-              padding: "10px",
-              borderRadius: "3px",
-              width: 180,
-              fontSize: "12px",
-              backgroundColor: def.color,
-            }}
-          >
-            {def.inputs.map((input, index) => (
-              <Handle
-                key={`input-${index}`}
-                type="target"
-                position={Position.Left}
-                id={input}
-                style={{
-                  top: `${((index + 1) / (def.inputs.length + 1)) * 100}%`,
-                }}
-              />
-            ))}
-            <div style={{ fontWeight: "bold" }}>{data.label}</div>
-            {data.error && <div className="node-error-symbol" />}
-            {data.error && (
-              <div
-                className="node-error"
-                style={{ color: "red", fontSize: "10px" }}
-              >
-                {data.error}
-              </div>
-            )}
-            {def.outputs.map((output, index) => (
-              <Handle
-                key={`output-${index}`}
-                type="source"
-                position={Position.Right}
-                id={output}
-                style={{
-                  top: `${((index + 1) / (def.outputs.length + 1)) * 100}%`,
-                }}
-              />
-            ))}
-          </div>
-        );
+        const { id, data, type } = props;
+        return <DefaultNode id={id} data={data} def={def} type={type} />;
       });
       return acc;
     }, {} as Record<string, React.ComponentType<NodeProps<NodeData>>>);
@@ -395,6 +352,11 @@ const WorkflowCanvas: React.FC = () => {
       }
     }
   }, [reactFlowInstance, setNodes]);
+
+  const handleDeleteNode = (nodeId: string) => {
+    setNodes((prevNodes) => prevNodes.filter((node) => node.id !== nodeId));
+    // setConnections((prevConnections) => prevConnections.filter(connection => connection.source !== nodeId && connection.target !== nodeId));
+  };
 
   return (
     <ReactFlowProvider>
