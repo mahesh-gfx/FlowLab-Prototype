@@ -10,7 +10,8 @@ const AppBar: React.FC<AppBarProps> = ({ RightComponent }) => {
   return (
     <div className="app-bar">
       <div className="app-bar-left">
-        <img src={appLogo} alt="App Logo" className="app-logo" />
+        <img src={appLogo} alt="App Logo" className="app-logo" />{" "}
+        <span>| &nbsp;&nbsp;Prototype</span>
       </div>
       <div className="app-bar-right">
         {RightComponent && <RightComponent />}

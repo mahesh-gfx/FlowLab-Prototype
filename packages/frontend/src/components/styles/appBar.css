@@ -9,6 +9,7 @@
 .app-bar-left {
   display: flex;
   align-items: center;
+  color: black;
 }
 
 .app-logo {
