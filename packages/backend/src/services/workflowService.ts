@@ -385,12 +385,44 @@ export class WorkflowService extends EventEmitter {
       workflow.name = workflowName || "Untitled Workflow";
       workflow.description = description || "";
 
-      // Remove existing nodes and edges
-      await nodeRepository.remove(workflow.nodes);
-      await edgeRepository.remove(workflow.edges);
+      let response: any;
+      try {
+        // Fetch and remove existing nodes and edges in parallel
+        const [existingNodes, existingEdges] = await Promise.all([
+          nodeRepository.find({
+            where: { workflow: { id: workflowId } },
+          }),
+          edgeRepository.find({
+            where: { workflow: { id: workflowId } },
+          }),
+        ]);
 
-      // Save updated workflow
-      const response = await workflowRepository.save(workflow);
+        console.log("Existing nodes: ", existingNodes);
+        console.log("Existing edges: ", existingEdges);
+
+        // Remove existing nodes and edges in parallel
+        await Promise.all([
+          nodeRepository.remove(existingNodes),
+          edgeRepository.remove(existingEdges),
+        ]);
+
+        const [existingNodesStill, existingEdgesStill] = await Promise.all([
+          nodeRepository.find({
+            where: { workflow: { id: workflowId } },
+          }),
+          edgeRepository.find({
+            where: { workflow: { id: workflowId } },
+          }),
+        ]);
+
+        console.log("Still Existing nodes: ", existingNodesStill);
+        console.log("Still Existing edges: ", existingEdges);
+
+        // Save updated workflow
+        response = await workflowRepository.save(workflow);
+      } catch (error) {
+        console.error("Error removing nodes and edges: ", error);
+      }
 
       // Save new nodes excluding output properties
       const nodeEntities = nodes.map((nodeData: any) => {

@@ -25,10 +25,16 @@ export class Workflow {
   @ManyToOne(() => User, (user) => user.workflows)
   user!: User;
 
-  @OneToMany(() => Node, (node) => node.workflow, { cascade: true })
+  @OneToMany(() => Node, (node) => node.workflow, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
   nodes!: Node[];
 
-  @OneToMany(() => Edge, (edge) => edge.workflow, { cascade: true })
+  @OneToMany(() => Edge, (edge) => edge.workflow, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
   edges!: Edge[];
 
   @CreateDateColumn({ type: "timestamp" })
