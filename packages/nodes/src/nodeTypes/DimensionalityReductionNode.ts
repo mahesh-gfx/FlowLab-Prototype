@@ -103,13 +103,17 @@ export class DimensionalityReductionNode extends BaseNode {
     const data = inputs.data.data.json;
     const algorithm = this.data.properties?.algorithm;
     const nComponents = this.data.properties?.nComponents;
+    const ignoreLastColumn = this.data.properties?.ignoreLastColumn;
 
     // Log the input data
     console.log("Input data:", data);
 
     try {
       // Transform the input data to a 2D array of numerical values
-      const transformedData = transformDataToMatrixFormat(data);
+      const { transformedData, lastColumn } = transformDataToMatrixFormat(
+        data,
+        ignoreLastColumn
+      );
 
       // Dynamically import the DruidJS library from the local package
       const druid = await import("@data-viz-tool/druidjs");
@@ -156,6 +160,14 @@ export class DimensionalityReductionNode extends BaseNode {
           throw new Error("Unsupported algorithm");
       }
 
+      // Include the last column in the final output if it was ignored
+      if (ignoreLastColumn && lastColumn.length > 0) {
+        reducedData = reducedData.map((row, index) => [
+          ...row,
+          lastColumn[index],
+        ]);
+      }
+
       return {
         data: {
           json: reducedData,
@@ -170,17 +182,26 @@ export class DimensionalityReductionNode extends BaseNode {
 }
 
 // Transformation method
-function transformDataToMatrixFormat(data: any[]): number[][] {
+function transformDataToMatrixFormat(
+  data: any[],
+  ignoreLastColumn: boolean
+): { transformedData: number[][]; lastColumn: any[] } {
   // Ensure the input data is an array of objects
   if (!Array.isArray(data) || typeof data[0] !== "object") {
     throw new Error("Input data must be an array of objects");
   }
 
-  // Extract numerical values dynamically
-  const transformedData: number[][] = data.map((row) => {
-    return Object.values(row).filter(
-      (value) => typeof value === "number"
-    ) as number[];
+  const transformedData: number[][] = [];
+  const lastColumn: any[] = [];
+
+  data.forEach((row) => {
+    const values = Object.values(row);
+    if (ignoreLastColumn) {
+      lastColumn.push(values.pop()); // Remove and store the last column
+    }
+    transformedData.push(
+      values.filter((value) => typeof value === "number") as number[]
+    );
   });
 
   // Check if the transformed data is valid for dimensionality reduction
@@ -188,5 +209,5 @@ function transformDataToMatrixFormat(data: any[]): number[][] {
     throw new Error("No numeric data available for dimensionality reduction");
   }
 
-  return transformedData;
+  return { transformedData, lastColumn };
 }
