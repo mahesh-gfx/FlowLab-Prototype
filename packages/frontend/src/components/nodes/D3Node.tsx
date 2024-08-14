@@ -50,7 +50,7 @@ const D3Node = ({ id, data, def, type }: any) => {
   };
 
   useEffect(() => {
-    if (data && expandedChartRef.current && miniChartRef.current) {
+    if (data) {
       // Clear previous chart
       d3.select(expandedChartRef.current).selectAll("*").remove();
       d3.select(miniChartRef.current).selectAll("*").remove();
@@ -62,13 +62,13 @@ const D3Node = ({ id, data, def, type }: any) => {
           case "scatter":
             renderScatterPlot(
               data?.output?.data?.json,
-              miniChartRef.current,
+              miniChartRef.current as HTMLElement,
               100,
               100
             );
             renderScatterPlot(
               data?.output?.data?.json,
-              expandedChartRef.current,
+              expandedChartRef.current as HTMLElement,
               500,
               500
             );
@@ -76,13 +76,13 @@ const D3Node = ({ id, data, def, type }: any) => {
           case "line":
             renderLineChart(
               data?.output?.data?.json,
-              miniChartRef.current,
+              miniChartRef.current as HTMLElement,
               100,
               100
             );
             renderLineChart(
               data?.output?.data?.json,
-              expandedChartRef.current,
+              expandedChartRef.current as HTMLElement,
               500,
               500
             );
@@ -90,13 +90,13 @@ const D3Node = ({ id, data, def, type }: any) => {
           case "bar":
             renderBarChart(
               data?.output?.data?.json,
-              miniChartRef.current,
+              miniChartRef.current as HTMLElement,
               500,
               500
             );
             renderBarChart(
               data?.output?.data?.json,
-              expandedChartRef.current,
+              expandedChartRef.current as HTMLElement,
               500,
               500
             );
