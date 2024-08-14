@@ -90,6 +90,14 @@ export class DimensionalityReductionNode extends BaseNode {
             },
           },
         },
+        {
+          displayName: "Skip Columns",
+          name: "skipColumns",
+          type: "string",
+          default: "",
+          description:
+            "Comma-separated list of columns to skip for dimensionality reduction",
+        },
       ],
       version: 1,
     };
@@ -103,16 +111,16 @@ export class DimensionalityReductionNode extends BaseNode {
     const data = inputs.data.data.json;
     const algorithm = this.data.properties?.algorithm;
     const nComponents = this.data.properties?.nComponents;
-    const ignoreLastColumn = this.data.properties?.ignoreLastColumn;
+    const skipColumns = this.data.properties?.skipColumns || "";
 
     // Log the input data
     console.log("Input data:", data);
 
     try {
       // Transform the input data to a 2D array of numerical values
-      const { transformedData, lastColumn } = transformDataToMatrixFormat(
+      const { transformedData, columnNames } = transformDataToMatrixFormat(
         data,
-        ignoreLastColumn
+        skipColumns
       );
 
       // Dynamically import the DruidJS library from the local package
@@ -160,17 +168,15 @@ export class DimensionalityReductionNode extends BaseNode {
           throw new Error("Unsupported algorithm");
       }
 
-      // Include the last column in the final output if it was ignored
-      if (ignoreLastColumn && lastColumn.length > 0) {
-        reducedData = reducedData.map((row, index) => [
-          ...row,
-          lastColumn[index],
-        ]);
-      }
+      // Combine reduced data with original columns
+      const finalData = reducedData.map((row, index) => {
+        const originalRow = Object.values(data[index]);
+        return [...row, ...originalRow];
+      });
 
       return {
         data: {
-          json: reducedData,
+          json: finalData,
           binary: null,
         },
       };
@@ -184,30 +190,48 @@ export class DimensionalityReductionNode extends BaseNode {
 // Transformation method
 function transformDataToMatrixFormat(
   data: any[],
-  ignoreLastColumn: boolean
-): { transformedData: number[][]; lastColumn: any[] } {
+  skipColumns: string
+): { transformedData: number[][]; columnNames: string[] } {
   // Ensure the input data is an array of objects
   if (!Array.isArray(data) || typeof data[0] !== "object") {
     throw new Error("Input data must be an array of objects");
   }
 
   const transformedData: number[][] = [];
-  const lastColumn: any[] = [];
+  let columnNames: string[] = [];
 
-  data.forEach((row) => {
+  const skipColumnsArray = skipColumns
+    .split(",")
+    .map((col) => col.trim().toLowerCase());
+
+  data.forEach((row, index) => {
     const values = Object.values(row);
-    if (ignoreLastColumn) {
-      lastColumn.push(values.pop()); // Remove and store the last column
+    const keys = Object.keys(row);
+
+    if (index === 0) {
+      columnNames = [...keys]; // Capture the column names from the first row
     }
-    transformedData.push(
-      values.filter((value) => typeof value === "number") as number[]
-    );
+
+    const filteredValues = keys.reduce((acc, key, i) => {
+      if (
+        !skipColumnsArray.includes(key.toLowerCase()) &&
+        typeof values[i] === "number"
+      ) {
+        acc.push(values[i] as number);
+      }
+      return acc;
+    }, [] as number[]);
+
+    transformedData.push(filteredValues);
   });
+
+  console.log("Transformed data: ", transformedData);
+  console.log("Column names: ", columnNames);
 
   // Check if the transformed data is valid for dimensionality reduction
   if (transformedData.length === 0 || transformedData[0].length === 0) {
     throw new Error("No numeric data available for dimensionality reduction");
   }
 
-  return { transformedData, lastColumn };
+  return { transformedData, columnNames };
 }

@@ -16,6 +16,7 @@ import {
   NodeProps,
   ReactFlowInstance,
   Edge,
+  getConnectedEdges,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import {
@@ -25,13 +26,14 @@ import {
   WorkflowEdge,
   NodeProperty,
 } from "@data-viz-tool/shared";
-import DefaultNode from "../components/nodes/DefaultNode";
-import { StartNode } from "@data-viz-tool/nodes";
 import { saveAs } from "file-saver";
 import { executeWorkflow } from "../api/executeWorkflow";
-import { getWorkflowById } from "../api/getWorkflowById";
-import { getNodeTypes } from "../api/getNodeTypes";
+
+//Import nodes
+import DefaultNode from "../components/nodes/DefaultNode";
+import { StartNode } from "@data-viz-tool/nodes";
 import D3Node from "../components/nodes/D3Node";
+import ButtonEdge from "../components/edges/ButtonEdge";
 
 interface NodeDefinition {
   name: string;
@@ -108,10 +110,22 @@ const WorkflowProvider = ({ children }: any) => {
     }, {} as Record<string, React.ComponentType<NodeProps<NodeData>>>);
   }, [nodeDefinitions]);
 
+  const edgeTypes = {
+    buttonedge: ButtonEdge,
+  };
+
   const onConnect = useCallback(
     (params: Connection) =>
       setEdges((eds) =>
-        addEdge({ ...params, animated: true, style: { stroke: "#fffff" } }, eds)
+        addEdge(
+          {
+            ...params,
+            animated: true,
+            style: { stroke: "#fffff" },
+            type: "buttonedge",
+          },
+          eds
+        )
       ),
     [setEdges]
   );
@@ -341,10 +355,53 @@ const WorkflowProvider = ({ children }: any) => {
     }
   }, [reactFlowInstance, setNodes]);
 
+  const onNodesDelete = (deletedNodes: any) => {
+    // Find all edges connected to the deleted nodes
+    const connectedEdges = getConnectedEdges(deletedNodes, edges);
+
+    // Update the edges by filtering out the connected ones
+    setEdges((eds) => eds.filter((edge) => !connectedEdges.includes(edge)));
+  };
+
+  const deleteNodeById = (nodeId: string) => {
+    // Find the node to be deleted
+    const nodeToDelete = nodes.find((node) => node.id === nodeId);
+
+    if (!nodeToDelete) {
+      console.warn(`Node with ID ${nodeId} not found.`);
+      return;
+    }
+
+    // Filter out the node to be deleted
+    const remainingNodes = nodes.filter((node) => node.id !== nodeId);
+
+    // Find and remove edges connected to the node to be deleted
+    const connectedEdges = getConnectedEdges([nodeToDelete], edges);
+    const remainingEdges = edges.filter(
+      (edge) => !connectedEdges.includes(edge)
+    );
+
+    // Update the state with the remaining nodes and edges
+    setNodes(remainingNodes);
+    setEdges(remainingEdges);
+  };
+
+  const transformEdges = (edges: any) => {
+    return edges.map((edge: any) => {
+      edge["animated"] = true;
+      edge["style"] = {
+        stroke: "#fffff",
+      };
+      edge["type"] = "buttonedge";
+      return edge;
+    });
+  };
+
   return (
     <WorkflowContext.Provider
       value={{
         nodes,
+        initialStartNode,
         setNodes,
         onNodesChange,
         edges,
@@ -368,6 +425,7 @@ const WorkflowProvider = ({ children }: any) => {
         workflowId,
         setWorkflowId,
         nodeTypes,
+        edgeTypes,
         onConnect,
         onDragOver,
         connectionLineStyle,
@@ -381,6 +439,9 @@ const WorkflowProvider = ({ children }: any) => {
         handleNodeError,
         handleWorkflowCompleted,
         startWorkflowExecutionV2,
+        onNodesDelete,
+        deleteNodeById,
+        transformEdges,
       }}
     >
       {children}

@@ -1,13 +1,15 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Handle, Position, useReactFlow } from "reactflow";
+import { useContext } from "react";
+import { Handle, Position, useReactFlow, EdgeLabelRenderer } from "reactflow";
+import { WorkflowContext } from "../../context/WorkflowContext";
 
 const DefaultNode = ({ id, data, def, type }: any) => {
   const { setNodes } = useReactFlow();
+  const { deleteNodeById } = useContext(WorkflowContext);
 
   const handleDelete = () => {
-    if (type != "StartNode")
-      setNodes((nds) => nds.filter((node) => node.id !== id));
+    deleteNodeById(id);
   };
 
   return (

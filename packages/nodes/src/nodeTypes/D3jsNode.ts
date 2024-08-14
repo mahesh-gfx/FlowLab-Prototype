@@ -41,6 +41,14 @@ export class D3JsNode extends BaseNode {
           default: "",
           description: "The property to use for the Y axis",
         },
+        {
+          displayName: "Category",
+          name: "category",
+          type: "string",
+          default: "",
+          description:
+            "The property to use for the color label / category label, usually the last column in the dataset",
+        },
       ],
       version: 1,
     };
@@ -52,9 +60,12 @@ export class D3JsNode extends BaseNode {
 
   async execute(inputs: Record<string, any>): Promise<any> {
     const data = inputs.data.data.json;
-    const chartType = this.data.properties?.chartType;
+
+    console.log("D3 node data: ", data);
+
     const xAxis = this.data.properties?.xAxis;
     const yAxis = this.data.properties?.yAxis;
+    const category = this.data.properties?.category;
 
     // Log the input data
     console.log("Input data:", data);
@@ -63,12 +74,16 @@ export class D3JsNode extends BaseNode {
     const preparedData = data.map((d: any) => ({
       x: d[xAxis],
       y: d[yAxis],
+      category: d[category],
     }));
+
+    const uniqueLabels = [
+      ...new Set(preparedData.map((item: any) => item.category)),
+    ];
 
     return {
       data: {
-        json: preparedData,
-        chartType,
+        json: { data: preparedData, labels: uniqueLabels },
       },
     };
   }

@@ -196,6 +196,7 @@
 
 .output-content {
   margin-top: 10px;
+  min-height: 100px;
 }
 
 .table-row {
@@ -214,8 +215,4 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.output-content {
-  margin-top: 10px;
 }

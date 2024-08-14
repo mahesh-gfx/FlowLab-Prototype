@@ -16,6 +16,7 @@ import "./styles/workflowCanvas.css";
 
 const WorkflowCanvas: React.FC = () => {
   const {
+    initialStartNode,
     setWorkflowId,
     setNodes,
     setEdges,
@@ -32,6 +33,7 @@ const WorkflowCanvas: React.FC = () => {
     onDragOver,
     onNodeDoubleClick,
     nodeTypes,
+    edgeTypes,
     connectionLineStyle,
     nodeDefinitions,
     selectedNode,
@@ -39,6 +41,8 @@ const WorkflowCanvas: React.FC = () => {
     executionStatus,
     executionErrors,
     setExecutionStatus,
+    onNodesDelete,
+    transformEdges,
   }: any = useContext(WorkflowContext);
 
   //useEffects
@@ -56,9 +60,14 @@ const WorkflowCanvas: React.FC = () => {
       getWorkflowById(id).then((response) => {
         console.log("Got workflowby id: Nodes", response.data.workflow.nodes);
         console.log("Got workflowby id: Edges", response.data.workflow.edges);
+
         setNodes(response.data.workflow.nodes);
-        setEdges(response.data.workflow.edges);
+        setEdges(transformEdges(response.data.workflow.edges));
       });
+    else {
+      setNodes([initialStartNode]);
+      setEdges([]);
+    }
 
     getNodeTypes()
       .then(setNodeDefinitions)
@@ -79,8 +88,10 @@ const WorkflowCanvas: React.FC = () => {
           onDragOver={onDragOver}
           onNodeDoubleClick={onNodeDoubleClick}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           connectionLineStyle={connectionLineStyle}
+          onNodesDelete={onNodesDelete}
         >
           <Controls position="top-right" />
           <Background />
@@ -95,36 +106,7 @@ const WorkflowCanvas: React.FC = () => {
             right: "20px",
             gap: "10px",
           }}
-        >
-          {/* <button onClick={onExport}>Export Workflow</button>
-          <label htmlFor="import-workflow">Import Workflow</label>
-          <input
-            type="file"
-            id="import-workflow"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  if (event.target?.result) {
-                    onImport(event.target.result as string);
-                  }
-                };
-                reader.readAsText(file);
-              }
-            }}
-          />
-          <button
-            onClick={startWorkflowExecutionV2}
-            disabled={isExecuting}
-            style={{
-              opacity: isExecuting ? 0.5 : 1,
-              cursor: isExecuting ? "not-allowed" : "pointer",
-            }}
-          >
-            {isExecuting ? "Executing workflow..." : "Save & Execute Workflow"}
-          </button> */}
-        </div>
+        ></div>
         {selectedNode &&
           selectedNode.type &&
           nodeDefinitions[selectedNode.type] && (
