@@ -19,7 +19,7 @@ export class ReadCSVNode extends BaseNode {
       properties: [
         {
           displayName: "CSV File",
-          name: "dataSource",
+          name: "csvFile",
           type: "file",
           default: null,
           description: "Upload the CSV file to be read",
@@ -34,15 +34,14 @@ export class ReadCSVNode extends BaseNode {
   }
 
   async execute(inputs: Record<string, any>): Promise<any> {
-    const dataSource = this.data.properties?.dataSource;
-    if (!dataSource || !dataSource.content) {
+    const csvFile = this.data.properties?.csvFile;
+    if (!csvFile || !csvFile.content) {
       console.error("No CSV file provided");
       throw new Error("No CSV file provided");
     }
 
     try {
-      const base64Content =
-        dataSource.content.split(",")[1] || dataSource.content;
+      const base64Content = csvFile.content.split(",")[1] || csvFile.content;
       const csvData = Buffer.from(base64Content, "base64").toString("utf-8");
       const parsedData = Papa.parse(csvData, {
         header: true,

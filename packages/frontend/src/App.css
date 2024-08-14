@@ -16,3 +16,31 @@
 .page-title {
   color: #95c623;
 }
+
+.button {
+  font-size: 14px;
+  padding: 4px 16px;
+  width: max-content;
+  border-radius: 20px;
+  outline: none;
+  border: 1px solid transparent;
+  background-color: rgb(189, 189, 189);
+  cursor: pointer;
+}
+
+.button-small {
+  font-size: 7px;
+  padding: 2px 8px;
+  width: max-content;
+  border-radius: 10px;
+  outline: none;
+  border: 1px solid transparent;
+  background-color: rgb(189, 189, 189);
+  cursor: pointer;
+}
+
+.button:hover,
+.button-small:hover {
+  background-color: rgb(214, 205, 255);
+  border: 1px solid blue;
+}

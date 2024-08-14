@@ -11,21 +11,27 @@
   display: flex;
   width: 100%;
   position: absolute;
-  left: 0px;
-  top: 35px;
+  top: 4px;
+  right: 7px;
   align-items: center;
-  justify-content: center;
+  justify-content: end;
+  box-sizing: border-box;
 
   .node-delete-button {
     display: flex;
+    align-items: center;
+    justify-content: center;
     visibility: hidden;
-    background-color: transparent;
+    background-color: white;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
     border: none;
     cursor: pointer;
-    padding: 10px;
-    font-size: 1rem;
+    padding: 5px;
+    font-size: 10px;
     transition: color 0.3s ease;
-    color: #9a9797;
+    color: black;
   }
 
   .node-delete-button:hover {
@@ -33,7 +39,23 @@
   }
 }
 
-.react-flow__node-default:hover .node-delete-button,
+.node:hover .node-delete-button,
 .react-flow__node-custom:hover .node-delete-button {
   visibility: visible;
+}
+
+.node {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
+.d3-mini-container {
+  padding: 5px;
+}
+
+.d3-mini-container svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }

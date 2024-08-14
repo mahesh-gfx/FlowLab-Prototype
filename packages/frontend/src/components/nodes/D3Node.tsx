@@ -1,10 +1,7 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Handle, Position, useReactFlow, EdgeLabelRenderer } from "reactflow";
+import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import Modal from "react-modal";
-import { WorkflowContext } from "../../context/WorkflowContext";
+import DefaultNode from "./DefaultNode";
 
 Modal.setAppElement("#root"); // Set the app element for accessibility
 
@@ -13,30 +10,25 @@ interface DataPoint {
   y: number;
   category: string;
 }
-
 const D3Node = ({ id, data, def, type }: any) => {
-  const { setNodes } = useReactFlow();
   const expandedChartRef = useRef<HTMLDivElement | null>(null);
   const miniChartRef = useRef<HTMLDivElement | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [hasOutputData, setHasOutputData] = useState(false);
 
-  const { deleteNodeById } = useContext(WorkflowContext);
-
-  const handleDelete = () => {
-    deleteNodeById(id);
-  };
-
   const openModal = () => {
     setModalIsOpen(true);
+    setTimeout(() => {
+      renderExpandedChart();
+    }, 100);
   };
 
   const closeModal = () => {
     setModalIsOpen(false);
   };
 
-  const downloadChart = () => {
-    const svg = expandedChartRef.current?.querySelector("svg");
+  const downloadChart = (container: any) => {
+    const svg = container?.querySelector("svg");
     if (svg) {
       const serializer = new XMLSerializer();
       const source = serializer.serializeToString(svg);
@@ -58,55 +50,71 @@ const D3Node = ({ id, data, def, type }: any) => {
       // Render the chart based on the chartType
       if (data?.output) {
         setHasOutputData(true);
-        switch (data?.properties?.chartType) {
-          case "scatter":
-            renderScatterPlot(
-              data?.output?.data?.json,
-              miniChartRef.current as HTMLElement,
-              100,
-              100
-            );
-            renderScatterPlot(
-              data?.output?.data?.json,
-              expandedChartRef.current as HTMLElement,
-              500,
-              500
-            );
-            break;
-          case "line":
-            renderLineChart(
-              data?.output?.data?.json,
-              miniChartRef.current as HTMLElement,
-              100,
-              100
-            );
-            renderLineChart(
-              data?.output?.data?.json,
-              expandedChartRef.current as HTMLElement,
-              500,
-              500
-            );
-            break;
-          case "bar":
-            renderBarChart(
-              data?.output?.data?.json,
-              miniChartRef.current as HTMLElement,
-              500,
-              500
-            );
-            renderBarChart(
-              data?.output?.data?.json,
-              expandedChartRef.current as HTMLElement,
-              500,
-              500
-            );
-            break;
-          default:
-            console.error("Unsupported chart type:", data.chartType);
-        }
+        renderMiniChart();
       } else setHasOutputData(false);
     }
   }, [JSON.stringify(data)]);
+
+  function renderMiniChart() {
+    switch (data?.properties?.chartType) {
+      case "scatter":
+        renderScatterPlot(
+          data?.output?.data?.json,
+          miniChartRef.current as HTMLElement,
+          500,
+          500
+        );
+        break;
+      case "line":
+        renderLineChart(
+          data?.output?.data?.json,
+          miniChartRef.current as HTMLElement,
+          500,
+          500
+        );
+        break;
+      case "bar":
+        renderBarChart(
+          data?.output?.data?.json,
+          miniChartRef.current as HTMLElement,
+          500,
+          500
+        );
+        break;
+      default:
+        console.error("Unsupported chart type:", data.chartType);
+    }
+  }
+  function renderExpandedChart() {
+    switch (data?.properties?.chartType) {
+      case "scatter":
+        renderScatterPlot(
+          data?.output?.data?.json,
+          expandedChartRef.current as HTMLElement,
+          500,
+          500
+        );
+        break;
+      case "line":
+        renderLineChart(
+          data?.output?.data?.json,
+          expandedChartRef.current as HTMLElement,
+          500,
+          500
+        );
+        break;
+      case "bar":
+        renderBarChart(
+          data?.output?.data?.json,
+          expandedChartRef.current as HTMLElement,
+          500,
+          500
+        );
+        break;
+      default:
+        console.error("Unsupported chart type:", data.chartType);
+    }
+  }
 
   function renderScatterPlot(
     data: { data: DataPoint[]; labels: string[] },
@@ -114,14 +122,20 @@ const D3Node = ({ id, data, def, type }: any) => {
     renderWidth: number,
     renderHeight: number
   ) {
+    // Clear previous SVG if any
+    d3.select(container).selectAll("*").remove();
+
     const svg = d3
       .select(container)
       .append("svg")
       .attr("width", renderWidth)
       .attr("height", renderHeight)
+      .attr("viewBox", `0 0 ${renderHeight} ${renderWidth}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
       .style("background-color", "white");
 
-    const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+    // Adjust margins for smaller containers
+    const margin = { top: 10, right: 10, bottom: 30, left: 30 };
     const width = renderWidth - margin.left - margin.right;
     const height = renderHeight - margin.top - margin.bottom;
 
@@ -147,9 +161,14 @@ const D3Node = ({ id, data, def, type }: any) => {
 
     g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).ticks(Math.max(width / 30, 5))) // Increase ticks
+      .selectAll("text")
+      .style("font-size", "12px"); // Reduce font size
 
-    g.append("g").call(d3.axisLeft(y));
+    g.append("g")
+      .call(d3.axisLeft(y).ticks(Math.max(height / 30, 5))) // Increase ticks
+      .selectAll("text")
+      .style("font-size", "12px"); // Reduce font size
 
     // Add tooltip
     const tooltip = d3
@@ -161,7 +180,7 @@ const D3Node = ({ id, data, def, type }: any) => {
       .style("border", "1px solid #d3d3d3")
       .style("padding", "5px")
       .style("border-radius", "3px")
-      .style("font-size", "12px")
+      .style("font-size", "10px") // Reduce tooltip font size
       .style("pointer-events", "none");
 
     g.selectAll(".dot")
@@ -177,7 +196,7 @@ const D3Node = ({ id, data, def, type }: any) => {
         tooltip
           .style("visibility", "visible")
           .text(`x: ${d.x}, y: ${d.y}, category: ${d.category}`);
-        d3.select(this).attr("r", 5); // Highlight point
+        d3.select(this).attr("r", 4); // Highlight point
       })
       .on("mousemove", function (event) {
         const [mouseX, mouseY] = d3.pointer(event);
@@ -187,7 +206,7 @@ const D3Node = ({ id, data, def, type }: any) => {
       })
       .on("mouseout", function () {
         tooltip.style("visibility", "hidden");
-        d3.select(this).attr("r", 3.5); // Reset point size
+        d3.select(this).attr("r", Math.max(1.5, Math.min(2.5, width / 50))); // Reset point size
       });
   }
 
@@ -202,6 +221,8 @@ const D3Node = ({ id, data, def, type }: any) => {
       .append("svg")
       .attr("width", renderWidth)
       .attr("height", renderHeight)
+      .attr("viewBox", `0 0 ${renderHeight} ${renderWidth}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
       .style("background-color", "white");
 
     const margin = { top: 20, right: 30, bottom: 40, left: 40 };
@@ -256,6 +277,8 @@ const D3Node = ({ id, data, def, type }: any) => {
       .append("svg")
       .attr("width", renderWidth)
       .attr("height", renderHeight)
+      .attr("viewBox", `0 0 ${renderHeight} ${renderWidth}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
       .style("background-color", "white");
 
     const margin = { top: 20, right: 30, bottom: 40, left: 40 };
@@ -304,52 +327,35 @@ const D3Node = ({ id, data, def, type }: any) => {
   };
 
   return (
-    <div
-      className="react-flow__node-default 3-node"
-      style={{
-        padding: "10px",
-        borderRadius: "3px",
-        width: 180,
-        fontSize: "12px",
-        backgroundColor: def.color,
-      }}
-    >
-      {def.inputs.map((input: any, index: any) => (
-        <Handle
-          key={`input-${index}`}
-          type="target"
-          position={Position.Left}
-          id={input}
-          style={{
-            top: `${((index + 1) / (def.inputs.length + 1)) * 100}%`,
-          }}
-        />
-      ))}
-      <div style={{ fontWeight: "bold" }}>{data.label}</div>
+    <DefaultNode id={id} data={data} def={def} type={type}>
+      {/* Add new features */}
       <div ref={miniChartRef} className="d3-mini-container"></div>
       {hasOutputData && (
-        <button onClick={openModal} style={{ marginTop: "10px" }}>
-          Expand View
-        </button>
-      )}
-      {def.outputs.map((output: any, index: any) => (
-        <Handle
-          key={`output-${index}`}
-          type="source"
-          position={Position.Right}
-          id={output}
+        <div
           style={{
-            top: `${((index + 1) / (def.outputs.length + 1)) * 100}%`,
+            display: "flex",
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+            margin: "8px 0",
           }}
-        />
-      ))}
-      <div className="node-delete-button-wrapper">
-        {type !== "StartNode" && (
-          <button className="node-delete-button" onClick={handleDelete}>
-            <FontAwesomeIcon icon={faTrash} size="2xs" />
+        >
+          <button
+            onClick={openModal}
+            className="button-small"
+            style={{ margin: "5px" }}
+          >
+            Expand View
           </button>
-        )}
-      </div>
+          <button
+            onClick={() => downloadChart(miniChartRef.current)}
+            style={{ width: "max-content" }}
+            className="button-small"
+          >
+            Download Chart
+          </button>
+        </div>
+      )}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
@@ -364,17 +370,37 @@ const D3Node = ({ id, data, def, type }: any) => {
             transform: "translate(-50%, -50%)",
             width: "600px",
             height: "600px",
+            display: "flex",
+            flexDirection: "column",
+            borderRadius: "8px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+          },
+          overlay: {
+            background: "rgba(128, 128, 128, 0.3)",
+            backdropFilter: "blur(2px)",
+            zIndex: 20,
           },
         }}
       >
         <h2>{data.label}</h2>
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            justifyContent: "flex-end",
+          }}
+        >
+          <button
+            onClick={() => downloadChart(expandedChartRef.current)}
+            style={{ width: "max-content" }}
+            className="button"
+          >
+            Download Chart
+          </button>
+        </div>
         <div ref={expandedChartRef} className="d3-expanded-container"></div>
-        <button onClick={downloadChart}>Download Chart</button>
-        <button onClick={closeModal} style={{ marginLeft: "10px" }}>
-          Close
-        </button>
       </Modal>
-    </div>
+    </DefaultNode>
   );
 };
 

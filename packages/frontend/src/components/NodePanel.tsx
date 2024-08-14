@@ -27,7 +27,6 @@ const NodePanel: React.FC<NodePanelProps> = ({ nodeTypes, onDragStart }) => {
           padding: "20px",
           border: "1px solid black",
           borderRadius: "20px",
-          height: "560px",
         }}
       >
         <span style={{ display: "block", fontWeight: "bold" }}>Node Types</span>
