@@ -167,8 +167,6 @@ export class WorkflowService extends EventEmitter {
         edge.sourceHandle = edgeData.sourceHandle;
         edge.target = edgeData.target;
         edge.targetHandle = edgeData.targetHandle;
-        edge.animated = edgeData.animated || false;
-        edge.style = edgeData.style || null;
         edge.workflow = workflow;
         return edge;
       });
@@ -263,8 +261,6 @@ export class WorkflowService extends EventEmitter {
           target: edge.target,
           targetHandle: edge.targetHandle,
           id: edge.id,
-          animated: edge.animated || false,
-          style: edge.style || null,
         }));
 
         return {
@@ -388,38 +384,18 @@ export class WorkflowService extends EventEmitter {
       let response: any;
       try {
         // Fetch and remove existing nodes and edges in parallel
-        const [existingNodes, existingEdges] = await Promise.all([
-          nodeRepository.find({
-            where: { workflow: { id: workflowId } },
+        response = await Promise.all([
+          nodeRepository.delete({
+            workflow: {
+              id: workflowId,
+            },
           }),
-          edgeRepository.find({
-            where: { workflow: { id: workflowId } },
-          }),
-        ]);
-
-        console.log("Existing nodes: ", existingNodes);
-        console.log("Existing edges: ", existingEdges);
-
-        // Remove existing nodes and edges in parallel
-        await Promise.all([
-          nodeRepository.remove(existingNodes),
-          edgeRepository.remove(existingEdges),
-        ]);
-
-        const [existingNodesStill, existingEdgesStill] = await Promise.all([
-          nodeRepository.find({
-            where: { workflow: { id: workflowId } },
-          }),
-          edgeRepository.find({
-            where: { workflow: { id: workflowId } },
+          edgeRepository.delete({
+            workflow: {
+              id: workflowId,
+            },
           }),
         ]);
-
-        console.log("Still Existing nodes: ", existingNodesStill);
-        console.log("Still Existing edges: ", existingEdges);
-
-        // Save updated workflow
-        response = await workflowRepository.save(workflow);
       } catch (error) {
         console.error("Error removing nodes and edges: ", error);
       }
@@ -444,22 +420,21 @@ export class WorkflowService extends EventEmitter {
         return node;
       });
 
-      await nodeRepository.save(nodeEntities);
+      response = await nodeRepository.save(nodeEntities).then(async () => {
+        // Save new edges
+        const edgeEntities = edges.map((edgeData: any) => {
+          const edge = new Edge();
+          edge.source = edgeData.source;
+          edge.sourceHandle = edgeData.sourceHandle;
+          edge.target = edgeData.target;
+          edge.targetHandle = edgeData.targetHandle;
+          edge.workflow = workflow;
+          return edge;
+        });
 
-      // Save new edges
-      const edgeEntities = edges.map((edgeData: any) => {
-        const edge = new Edge();
-        edge.source = edgeData.source;
-        edge.sourceHandle = edgeData.sourceHandle;
-        edge.target = edgeData.target;
-        edge.targetHandle = edgeData.targetHandle;
-        edge.animated = edgeData.animated || false;
-        edge.style = edgeData.style || null;
-        edge.workflow = workflow;
-        return edge;
+        return await edgeRepository.save(edgeEntities);
       });
 
-      await edgeRepository.save(edgeEntities);
       return response;
     } catch (error) {
       console.error(error);
