@@ -18,12 +18,6 @@ export class Edge {
   @Column()
   targetHandle!: string;
 
-  @Column("boolean", { default: false })
-  animated!: boolean;
-
-  @Column("jsonb", { nullable: true })
-  style!: { stroke: string };
-
   @ManyToOne(() => Workflow, (workflow) => workflow.edges)
   workflow!: Workflow;
 }
