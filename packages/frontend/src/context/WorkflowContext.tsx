@@ -91,6 +91,15 @@ const WorkflowProvider = ({ children }: any) => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
   const [workflowId, setWorkflowId] = useState<string>("");
+  const [NodeConfigModalIsOpen, setNodeConfigModalIsOpen] = useState(false);
+
+  const openModal = () => {
+    setNodeConfigModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setNodeConfigModalIsOpen(false);
+  };
 
   const nodeTypes = useMemo(() => {
     return Object.entries(nodeDefinitions).reduce((acc, [key, def]) => {
@@ -181,6 +190,9 @@ const WorkflowProvider = ({ children }: any) => {
   const onNodeDoubleClick = useCallback(
     (event: React.MouseEvent, node: Node<NodeData>) => {
       setSelectedNode(node);
+      setTimeout(() => {
+        setNodeConfigModalIsOpen(true);
+      }, 100);
     },
     []
   );
@@ -442,6 +454,9 @@ const WorkflowProvider = ({ children }: any) => {
         onNodesDelete,
         deleteNodeById,
         transformEdges,
+        NodeConfigModalIsOpen,
+        openModal,
+        closeModal,
       }}
     >
       {children}

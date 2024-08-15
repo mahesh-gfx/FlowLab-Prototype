@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import Modal from "react-modal";
 import { Node } from "reactflow";
 import { NodeData, NodeProperty } from "@data-viz-tool/shared";
 import VirtualizedTable from "./VirtualizedTable";
 import "./styles/nodeConfigPopup.css";
 import VirtualizedJsonView from "./VirtualisedJSONViewer";
+import { WorkflowContext } from "../context/WorkflowContext";
 
 interface NodeConfigPopupProps {
-  node: Node<NodeData>;
+  node: Node;
   nodeDefinition: {
     properties: NodeProperty[];
   };
@@ -21,11 +23,17 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   onUpdate,
 }) => {
   const [activeTab, setActiveTab] = useState<"config" | "output">("config");
-  const [config, setConfig] = useState<Partial<NodeData>>({ properties: {} });
+  const [config, setConfig] = useState<NodeData>({
+    label: node.data.label || "Default Label", // Ensure a default label
+    type: node.data.type || "Default Type", // Ensure a default type
+    properties: {},
+    output: node.data.output || {}, // Ensure a default output
+  });
   const [outputView, setOutputView] = useState<"table" | "json" | "binary">(
     "json"
   );
-  const [properties, setProperties] = useState<any>({});
+  const [properties, setProperties] = useState<Record<string, any>>({});
+  const { NodeConfigModalIsOpen }: any = useContext(WorkflowContext);
 
   useEffect(() => {
     setConfig(node.data);
@@ -40,8 +48,7 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
         [propertyName]: value,
       },
     }));
-    console.log("Config: ", config);
-    setProperties((prev: any) => ({
+    setProperties((prev) => ({
       ...prev,
       [propertyName]: value,
     }));
@@ -65,12 +72,10 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
 
   const handleSubmit = () => {
     onUpdate(node.id, config);
-    console.log("All configs: ", config);
     onClose();
   };
 
   const displayField = (show: any) => {
-    console.log("Show values: ", show, properties);
     if (show == null) return true;
     for (const key in show) {
       if (show[key] && properties.hasOwnProperty(key)) {
@@ -85,18 +90,38 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
 
   const renderConfigurationForm = (): JSX.Element => {
     return (
-      <>
+      <div className="form-group-wrapper">
         {nodeDefinition.properties.map((prop) => {
           const value = config.properties?.[prop.name] || prop.default;
           if (!displayField(prop.displayOptions?.show || null)) return null;
           switch (prop.type) {
-            case "string":
             case "text":
               return (
                 <div key={prop.name} className="form-group">
-                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <label htmlFor={prop.name}>
+                    {prop.displayName}
+                    <span className="form-group-description">
+                      {prop.description}
+                    </span>
+                  </label>
+                  <textarea
+                    id={prop.name}
+                    value={value}
+                    onChange={(e) => handleChange(prop.name, e.target.value)}
+                  />
+                </div>
+              );
+            case "string":
+              return (
+                <div key={prop.name} className="form-group">
+                  <label htmlFor={prop.name}>
+                    {prop.displayName}
+                    <span className="form-group-description">
+                      {prop.description}
+                    </span>
+                  </label>
                   <input
-                    type={prop.type === "string" ? "text" : "textarea"}
+                    type={"text"}
                     id={prop.name}
                     value={value}
                     onChange={(e) => handleChange(prop.name, e.target.value)}
@@ -106,7 +131,12 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
             case "number":
               return (
                 <div key={prop.name} className="form-group">
-                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <label htmlFor={prop.name}>
+                    {prop.displayName}
+                    <span className="form-group-description">
+                      {prop.description}
+                    </span>
+                  </label>
                   <input
                     type="number"
                     id={prop.name}
@@ -120,7 +150,12 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
             case "boolean":
               return (
                 <div key={prop.name} className="form-group">
-                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <label htmlFor={prop.name}>
+                    {prop.displayName}
+                    <span className="form-group-description">
+                      {prop.description}
+                    </span>
+                  </label>
                   <input
                     type="checkbox"
                     id={prop.name}
@@ -132,7 +167,12 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
             case "options":
               return (
                 <div key={prop.name} className="form-group">
-                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <label htmlFor={prop.name}>
+                    {prop.displayName}
+                    <span className="form-group-description">
+                      {prop.description}
+                    </span>
+                  </label>
                   <select
                     id={prop.name}
                     value={value}
@@ -149,16 +189,27 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
             case "file":
               return (
                 <div key={prop.name} className="form-group">
-                  <label htmlFor={prop.name}>{prop.displayName}</label>
+                  <label htmlFor={prop.name}>
+                    {prop.displayName}
+                    <span className="form-group-description">
+                      {prop.description}
+                    </span>
+                  </label>
                   <input
                     type="file"
                     id={prop.name}
+                    className="form-group-file-input"
                     onChange={(e) =>
                       handleFileChange(prop.name, e.target.files?.[0] || null)
                     }
                   />
                   {value && value.name && (
-                    <div>Uploaded file: {value.name}</div>
+                    <div className="form-group-uploaded-file">
+                      Uploaded CSV file:{" "}
+                      <div className="form-group-uploaded-file-filename">
+                        &nbsp;{value.name}
+                      </div>
+                    </div>
                   )}
                 </div>
               );
@@ -166,7 +217,7 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
               return null;
           }
         })}
-      </>
+      </div>
     );
   };
 
@@ -242,9 +293,21 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   };
 
   return (
-    <div className="node-config-popup-wrapper">
+    <Modal
+      isOpen={NodeConfigModalIsOpen}
+      onRequestClose={onClose}
+      contentLabel="Node Configuration"
+      className="node-config-popup-wrapper"
+      overlayClassName="node-config-overlay"
+    >
       <div className="node-config-popup">
-        <h2 className="node-config-title">{node.data.label} Configuration</h2>
+        <span className="node-config-title">
+          {node.data.label}{" "}
+          <span className="node-config-sub-text">
+            {" "}
+            &nbsp;| Configuration & Output
+          </span>
+        </span>
         <div className="node-config-tabs">
           <button
             className={`node-config-tab ${
@@ -256,32 +319,35 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
           </button>
           <button
             className={`node-config-tab ${
-              activeTab === "output" ? "active" : ""
+              activeTab == "output" ? "active" : ""
             }`}
             onClick={() => setActiveTab("output")}
           >
             Output
           </button>
         </div>
+
         <div className="node-config-content">
           {activeTab === "config" ? renderConfigurationForm() : renderOutput()}
         </div>
-        <div className="node-config-actions">
-          <button
-            className="node-config-button node-config-button-save"
-            onClick={handleSubmit}
-          >
-            Save
-          </button>
-          <button
-            className="node-config-button node-config-button-cancel"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-        </div>
+        {activeTab == "config" && (
+          <div className="node-config-actions">
+            <button
+              className="node-config-button node-config-button-save"
+              onClick={handleSubmit}
+            >
+              Save
+            </button>
+            <button
+              className="node-config-button node-config-button-cancel"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 };
 

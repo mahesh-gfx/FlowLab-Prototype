@@ -93,7 +93,7 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
                 typeof data?.properties[property] == "number" ? (
                 <div style={{ display: "flex", fontSize: "6px" }}>
                   <div style={{ fontWeight: "bold" }}>
-                    {camelCaseToTitleCase(property)}&nbsp;
+                    {camelCaseToTitleCase(property)} :&nbsp; &nbsp;
                   </div>
                   <div style={{ color: "grey" }}>
                     {data.properties[property]}
@@ -103,7 +103,7 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
                 typeof data?.properties[property] == "object" && (
                   <div style={{ display: "flex", fontSize: "6px" }}>
                     <div style={{ fontWeight: "bold" }}>
-                      {camelCaseToTitleCase(property)}&nbsp;
+                      {camelCaseToTitleCase(property)} :&nbsp; &nbsp;
                     </div>
                     <div style={{ color: "grey" }}>
                       {(data.properties[property] &&
