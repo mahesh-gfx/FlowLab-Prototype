@@ -71,7 +71,12 @@ const D3Node = ({ id, data, def, type }: any) => {
 
   // Effect to handle when all states are updated
   useEffect(() => {
-    if (hasOutputData && labels.length > 0 && chartType) {
+    if (
+      hasOutputData &&
+      labels.length > 0 &&
+      chartType &&
+      data.output?.data?.json?.chartData
+    ) {
       console.log(
         "Chart Data: ",
         data.output?.data?.json?.chartData,

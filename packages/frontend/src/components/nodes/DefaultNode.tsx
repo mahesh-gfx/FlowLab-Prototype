@@ -9,8 +9,6 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
   const { deleteNodeById, edges, setEdges } = useContext(WorkflowContext);
   const { getNode } = useReactFlow();
 
-  console.log("NODE:DATA:::: ", data);
-
   const handleDelete = () => {
     deleteNodeById(id);
   };

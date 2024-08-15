@@ -105,10 +105,9 @@ const WorkflowProvider = ({ children }: any) => {
     return Object.entries(nodeDefinitions).reduce((acc, [key, def]) => {
       acc[key] = React.memo((props: NodeProps<NodeData>) => {
         const { id, data, type } = props;
-        console.log("NODE TYPES: ", type);
+        // console.log("NODE TYPES: ", type);
         switch (type) {
           case "D3JsNode":
-            console.log("D3 on the workspace");
             return <D3Node id={id} data={data} def={def} type={type} />;
 
           default:
