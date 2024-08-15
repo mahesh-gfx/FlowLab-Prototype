@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Node } from "reactflow";
-import { FixedSizeList as List } from "react-window";
-import AutoSizer, { Size } from "react-virtualized-auto-sizer";
 import { NodeData, NodeProperty } from "@data-viz-tool/shared";
 import VirtualizedTable from "./VirtualizedTable";
 import "./styles/nodeConfigPopup.css";
-import ReactJson from "react-json-view";
 import VirtualizedJsonView from "./VirtualisedJSONViewer";
 
 interface NodeConfigPopupProps {

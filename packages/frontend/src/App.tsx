@@ -18,6 +18,7 @@ import AppBar from "./components/AppBar";
 import UserMenu from "./components/UserMenu";
 import WorkflowOptions from "./components/WorkflowOptions";
 import { WorkflowProvider } from "./context/WorkflowContext";
+import { StyledEngineProvider } from "@mui/material/styles";
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -25,34 +26,37 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <WorkflowProvider>
-      <Router>
-        <div className="App">
-          <HeaderWithConditionalComponent />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/workflow/:id"
-              element={
-                <ProtectedRoute>
-                  <WorkflowCanvas />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
-      </Router>
-    </WorkflowProvider>
+    <StyledEngineProvider injectFirst>
+      {" "}
+      <WorkflowProvider>
+        <Router>
+          <div className="App">
+            <HeaderWithConditionalComponent />
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/workflow/:id"
+                element={
+                  <ProtectedRoute>
+                    <WorkflowCanvas />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </Router>
+      </WorkflowProvider>
+    </StyledEngineProvider>
   );
 };
 
