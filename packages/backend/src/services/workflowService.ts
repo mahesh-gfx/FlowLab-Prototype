@@ -149,8 +149,8 @@ export class WorkflowService extends EventEmitter {
         // Remove dataSource property if it exists
         //(dataSource are files which can be large and hence difficult to write and retrieve from the database, has been causing javascript heap memory exhaustion)
         const properties = { ...nodeData.data.properties };
-        if (properties.dataSource) {
-          delete properties.dataSource;
+        if (properties.csvFile) {
+          delete properties.csvFile;
         }
         node.properties = properties;
 

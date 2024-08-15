@@ -5,6 +5,8 @@ import AutoSizer, { Size } from "react-virtualized-auto-sizer";
 import { NodeData, NodeProperty } from "@data-viz-tool/shared";
 import VirtualizedTable from "./VirtualizedTable";
 import "./styles/nodeConfigPopup.css";
+import ReactJson from "react-json-view";
+import VirtualizedJsonView from "./VirtualisedJSONViewer";
 
 interface NodeConfigPopupProps {
   node: Node<NodeData>;
@@ -24,7 +26,7 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   const [activeTab, setActiveTab] = useState<"config" | "output">("config");
   const [config, setConfig] = useState<Partial<NodeData>>({ properties: {} });
   const [outputView, setOutputView] = useState<"table" | "json" | "binary">(
-    "table"
+    "json"
   );
   const [properties, setProperties] = useState<any>({});
 
@@ -201,38 +203,7 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
     };
 
     const renderJsonView = () => {
-      const jsonData = JSON.stringify(executionResult, null, 2);
-      const lines = jsonData.split("\n");
-
-      const Row = ({
-        index,
-        style,
-      }: {
-        index: number;
-        style: React.CSSProperties;
-      }) => (
-        <div style={style} className="json-line">
-          {lines[index]}
-        </div>
-      );
-
-      return (
-        <div style={{ height: "400px" }}>
-          <AutoSizer>
-            {({ height, width }: { height: number; width: number }) => (
-              <List
-                height={height}
-                itemCount={lines.length}
-                itemSize={20}
-                width={width}
-                style={{ fontSize: "12px" }}
-              >
-                {Row}
-              </List>
-            )}
-          </AutoSizer>
-        </div>
-      );
+      return <VirtualizedJsonView data={executionResult.json} />;
     };
 
     const renderBinaryView = () => {
@@ -246,16 +217,16 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
       <div>
         <div className="output-view-selector">
           <button
-            onClick={() => setOutputView("table")}
-            className={outputView === "table" ? "active" : ""}
-          >
-            Table
-          </button>
-          <button
             onClick={() => setOutputView("json")}
             className={outputView === "json" ? "active" : ""}
           >
             JSON
+          </button>
+          <button
+            onClick={() => setOutputView("table")}
+            className={outputView === "table" ? "active" : ""}
+          >
+            Table
           </button>
           <button
             onClick={() => setOutputView("binary")}
