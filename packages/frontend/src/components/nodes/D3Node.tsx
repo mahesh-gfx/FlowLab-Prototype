@@ -6,15 +6,16 @@ import DefaultNode from "./DefaultNode";
 Modal.setAppElement("#root"); // Set the app element for accessibility
 
 interface DataPoint {
-  x: number;
-  y: number;
-  category: string;
+  [key: string]: any;
 }
 const D3Node = ({ id, data, def, type }: any) => {
   const expandedChartRef = useRef<HTMLDivElement | null>(null);
   const miniChartRef = useRef<HTMLDivElement | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [hasOutputData, setHasOutputData] = useState(false);
+  const [chartType, setChartType] = useState("scatter");
+  const [labels, setLabels] = useState<Array<any>>([]);
+  const [labelCategory, setLabelCategory] = useState("");
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -41,25 +42,50 @@ const D3Node = ({ id, data, def, type }: any) => {
     }
   };
 
+  // Effect to handle data updates
   useEffect(() => {
-    if (data) {
-      // Clear previous chart
-      d3.select(expandedChartRef.current).selectAll("*").remove();
-      d3.select(miniChartRef.current).selectAll("*").remove();
+    if (data && data.output?.data?.json) {
+      console.log("CHARTDATATATATATA: ", data.output.data.json.chartData);
 
-      // Render the chart based on the chartType
-      if (data?.output) {
-        setHasOutputData(true);
-        renderMiniChart();
-      } else setHasOutputData(false);
+      setChartType(data.properties?.chartType || "scatter");
+      setLabelCategory(data.properties?.category || null);
+
+      const uniqueLabels = new Set<string>(
+        data.output.data.json.chartData.map(
+          (item: any) => item[data.properties?.category || ""]
+        )
+      );
+
+      setLabels(Array.from(uniqueLabels));
+      // Clear previous chart
+      if (expandedChartRef.current) {
+        d3.select(expandedChartRef.current).selectAll("*").remove();
+      }
+      if (miniChartRef.current) {
+        d3.select(miniChartRef.current).selectAll("*").remove();
+      }
+
+      setHasOutputData(!!data.output);
     }
   }, [JSON.stringify(data)]);
 
+  // Effect to handle when all states are updated
+  useEffect(() => {
+    if (hasOutputData && labels.length > 0 && chartType) {
+      console.log(
+        "Chart Data: ",
+        data.output?.data?.json?.chartData,
+        chartType
+      );
+      renderMiniChart();
+    }
+  }, [hasOutputData, labels, chartType]);
+
   function renderMiniChart() {
-    switch (data?.properties?.chartType) {
+    switch (chartType) {
       case "scatter":
         renderScatterPlot(
-          data?.output?.data?.json,
+          data?.output?.data?.json?.chartData,
           miniChartRef.current as HTMLElement,
           500,
           500
@@ -67,7 +93,7 @@ const D3Node = ({ id, data, def, type }: any) => {
         break;
       case "line":
         renderLineChart(
-          data?.output?.data?.json,
+          data?.output?.data?.json?.chartData,
           miniChartRef.current as HTMLElement,
           500,
           500
@@ -75,7 +101,7 @@ const D3Node = ({ id, data, def, type }: any) => {
         break;
       case "bar":
         renderBarChart(
-          data?.output?.data?.json,
+          data?.output?.data?.json?.chartData,
           miniChartRef.current as HTMLElement,
           500,
           500
@@ -86,10 +112,10 @@ const D3Node = ({ id, data, def, type }: any) => {
     }
   }
   function renderExpandedChart() {
-    switch (data?.properties?.chartType) {
+    switch (chartType) {
       case "scatter":
         renderScatterPlot(
-          data?.output?.data?.json,
+          data?.output?.data?.json?.chartData,
           expandedChartRef.current as HTMLElement,
           500,
           500
@@ -97,7 +123,7 @@ const D3Node = ({ id, data, def, type }: any) => {
         break;
       case "line":
         renderLineChart(
-          data?.output?.data?.json,
+          data?.output?.data?.json?.chartData,
           expandedChartRef.current as HTMLElement,
           500,
           500
@@ -105,7 +131,7 @@ const D3Node = ({ id, data, def, type }: any) => {
         break;
       case "bar":
         renderBarChart(
-          data?.output?.data?.json,
+          data?.output?.data?.json?.chartData,
           expandedChartRef.current as HTMLElement,
           500,
           500
@@ -117,7 +143,7 @@ const D3Node = ({ id, data, def, type }: any) => {
   }
 
   function renderScatterPlot(
-    data: { data: DataPoint[]; labels: string[] },
+    data: DataPoint[],
     container: HTMLElement,
     renderWidth: number,
     renderHeight: number
@@ -146,8 +172,8 @@ const D3Node = ({ id, data, def, type }: any) => {
     const x = d3.scaleLinear().rangeRound([0, width]);
     const y = d3.scaleLinear().rangeRound([height, 0]);
 
-    const xExtent = d3.extent(data.data, (d) => d.x);
-    const yExtent = d3.extent(data.data, (d) => d.y);
+    const xExtent = d3.extent(data, (d) => d.x);
+    const yExtent = d3.extent(data, (d) => d.y);
 
     if (xExtent[0] !== undefined && xExtent[1] !== undefined) {
       x.domain(xExtent as [number, number]);
@@ -157,7 +183,7 @@ const D3Node = ({ id, data, def, type }: any) => {
       y.domain(yExtent as [number, number]);
     }
 
-    const color = d3.scaleOrdinal(d3.schemeCategory10).domain(data.labels);
+    const color = d3.scaleOrdinal(d3.schemeCategory10).domain(labels);
 
     g.append("g")
       .attr("transform", `translate(0,${height})`)
@@ -184,18 +210,18 @@ const D3Node = ({ id, data, def, type }: any) => {
       .style("pointer-events", "none");
 
     g.selectAll(".dot")
-      .data(data.data)
+      .data(data)
       .enter()
       .append("circle")
       .attr("class", "dot")
       .attr("cx", (d) => x(d.x))
       .attr("cy", (d) => y(d.y))
       .attr("r", 3.5)
-      .attr("fill", (d) => color(d.category))
+      .attr("fill", (d) => color(d[labelCategory]))
       .on("mouseover", function (event, d) {
         tooltip
           .style("visibility", "visible")
-          .text(`x: ${d.x}, y: ${d.y}, category: ${d.category}`);
+          .text(`${JSON.stringify(d, null, 2)}`);
         d3.select(this).attr("r", 4); // Highlight point
       })
       .on("mousemove", function (event) {
@@ -211,7 +237,7 @@ const D3Node = ({ id, data, def, type }: any) => {
   }
 
   function renderLineChart(
-    data: { data: DataPoint[]; labels: string[] },
+    data: DataPoint[],
     container: HTMLElement,
     renderWidth: number,
     renderHeight: number
@@ -236,8 +262,8 @@ const D3Node = ({ id, data, def, type }: any) => {
     const x = d3.scaleLinear().rangeRound([0, width]);
     const y = d3.scaleLinear().rangeRound([height, 0]);
 
-    const xExtent = d3.extent(data.data, (d) => d.x);
-    const yExtent = d3.extent(data.data, (d) => d.y);
+    const xExtent = d3.extent(data, (d) => d.x);
+    const yExtent = d3.extent(data, (d) => d.y);
 
     if (xExtent[0] !== undefined && xExtent[1] !== undefined) {
       x.domain(xExtent as [number, number]);
@@ -259,7 +285,7 @@ const D3Node = ({ id, data, def, type }: any) => {
     g.append("g").call(d3.axisLeft(y));
 
     g.append("path")
-      .datum(data.data)
+      .datum(data)
       .attr("fill", "none")
       .attr("stroke", "steelblue")
       .attr("stroke-width", 1.5)
@@ -267,7 +293,7 @@ const D3Node = ({ id, data, def, type }: any) => {
   }
 
   const renderBarChart = (
-    data: { data: DataPoint[]; labels: string[] },
+    data: DataPoint[],
     container: HTMLElement,
     renderWidth: number,
     renderHeight: number
@@ -287,29 +313,29 @@ const D3Node = ({ id, data, def, type }: any) => {
 
     const x = d3
       .scaleBand()
-      .domain(data.data.map((d) => d.x.toString()))
+      .domain(data.map((d) => d.x.toString()))
       .range([margin.left, width - margin.right])
       .padding(0.1);
 
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(data.data, (d) => d.y) || 0])
+      .domain([0, d3.max(data, (d) => d.y) || 0])
       .nice()
       .range([height - margin.bottom, margin.top]);
 
-    const color = d3.scaleOrdinal(d3.schemeCategory10).domain(data.labels);
+    const color = d3.scaleOrdinal(d3.schemeCategory10).domain(labels);
 
     const g = svg.append("g");
 
     g.selectAll("rect")
-      .data(data.data)
+      .data(data)
       .enter()
       .append("rect")
       .attr("x", (d: DataPoint) => x(d.x.toString()) || 0)
       .attr("y", (d: DataPoint) => y(d.y))
       .attr("height", (d: DataPoint) => y(0) - y(d.y))
       .attr("width", x.bandwidth())
-      .attr("fill", (d) => color(d.category))
+      .attr("fill", (d) => color(d[labelCategory]))
       .on("mouseover", function (event, d) {
         d3.select(this).attr("opacity", 0.7); // Highlight bar
       })

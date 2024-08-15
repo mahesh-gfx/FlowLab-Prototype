@@ -112,6 +112,7 @@ export class DimensionalityReductionNode extends BaseNode {
     const algorithm = this.data.properties?.algorithm;
     const nComponents = this.data.properties?.nComponents;
     const skipColumns = this.data.properties?.skipColumns || "";
+    const keys = "xyzabcdefghijklmnopqrstuvw".split("");
 
     // Log the input data
     console.log("Input data:", data);
@@ -127,14 +128,19 @@ export class DimensionalityReductionNode extends BaseNode {
       const druid = await import("@data-viz-tool/druidjs");
 
       const matrix = druid.Matrix.from(transformedData);
-      let reducedData: number[][];
+      let reducedData: any;
 
       switch (algorithm) {
         case "PCA":
           const pca: PCA = new druid.PCA(matrix, { d: nComponents });
-          reducedData = (pca.transform() as Matrix).to2dArray.map((row) =>
-            Array.from(row)
-          );
+          reducedData = (pca.transform() as Matrix).to2dArray.map((row) => {
+            const obj: Record<string, number> = {};
+            row.forEach((value, index) => {
+              const key = keys[index] || `key${index}`; // Fallback key if keys run out
+              obj[key] = value;
+            });
+            return obj;
+          });
           break;
         case "t-SNE":
           const perplexity = this.data.properties?.perplexity;
@@ -147,7 +153,14 @@ export class DimensionalityReductionNode extends BaseNode {
           const tsneResult = tsne.transform();
           reducedData =
             tsneResult instanceof druid.Matrix
-              ? tsneResult.to2dArray.map((row) => Array.from(row))
+              ? tsneResult.to2dArray.map((row) => {
+                  const obj: Record<string, number> = {};
+                  row.forEach((value, index) => {
+                    const key = keys[index] || `key${index}`; // Fallback key if keys run out
+                    obj[key] = value;
+                  });
+                  return obj;
+                })
               : tsneResult;
           break;
         case "UMAP":
@@ -161,23 +174,23 @@ export class DimensionalityReductionNode extends BaseNode {
           const umapResult = umap.transform();
           reducedData =
             umapResult instanceof druid.Matrix
-              ? umapResult.to2dArray.map((row) => Array.from(row))
+              ? umapResult.to2dArray.map((row) => {
+                  const obj: Record<string, number> = {};
+                  row.forEach((value, index) => {
+                    const key = keys[index] || `key${index}`; // Fallback key if keys run out
+                    obj[key] = value;
+                  });
+                  return obj;
+                })
               : umapResult;
           break;
         default:
           throw new Error("Unsupported algorithm");
       }
 
-      // Combine reduced data with original columns
-      const finalData = reducedData.map((row, index) => {
-        const originalRow = Object.values(data[index]);
-        return [...row, ...originalRow];
-      });
-
       return {
         data: {
-          json: finalData,
-          binary: null,
+          json: { reducedData: reducedData, originalData: data },
         },
       };
     } catch (error) {
