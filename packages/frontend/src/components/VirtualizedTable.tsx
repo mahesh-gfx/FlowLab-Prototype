@@ -29,7 +29,7 @@ const VirtualizedTable: React.FC<VirtualizedTableProps> = ({ data }) => {
   const rows: GridRowsProp = data.map((row, index) => ({ id: index, ...row }));
 
   return (
-    <div style={{ height: 300, width: "100%" }}>
+    <div style={{ height: 380, width: "100%" }}>
       <DataGrid
         rows={rows}
         columns={columns}
