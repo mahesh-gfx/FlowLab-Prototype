@@ -1,6 +1,44 @@
+@import "./reset.css";
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+
+html,
+body {
+  font-family: "Poppins", "Roboto", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Poppins", "Roboto", sans-serif;
+  font-weight: 600;
+}
+
+p {
+  font-family: "Poppins", "Roboto", sans-serif;
+  font-weight: 400;
+}
+
+.bold-text {
+  font-family: "Poppins", "Roboto", sans-serif;
+  font-weight: 700;
+}
+
 .App {
   text-align: left;
-  /* margin: 20px; */
 }
 
 .app-logo {
