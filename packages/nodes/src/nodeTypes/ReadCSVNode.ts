@@ -51,6 +51,7 @@ export class ReadCSVNode extends BaseNode {
 
       if (parsedData.errors.length > 0) {
         console.warn("CSV parsing errors:", parsedData.errors);
+        throw new Error("CSV parsing errors: Check CSV file");
       }
 
       return {
@@ -59,9 +60,9 @@ export class ReadCSVNode extends BaseNode {
           binary: null,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error reading CSV file:", error);
-      throw new Error("Failed to read CSV file");
+      throw new Error(error.message);
     }
   }
 }

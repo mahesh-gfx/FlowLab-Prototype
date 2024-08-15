@@ -84,7 +84,6 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
           )}
         </div>
       </div>
-      {data.error && <div className="node-error-symbol" />}
       {data?.properties && (
         <div style={{ padding: "5px 10px" }}>
           {data.properties != null &&

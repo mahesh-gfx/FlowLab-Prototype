@@ -411,8 +411,8 @@ export class WorkflowService extends EventEmitter {
 
         // Remove dataSource property if it exists
         const properties = { ...nodeData.data.properties };
-        if (properties.dataSource) {
-          delete properties.dataSource;
+        if (properties.csvFile) {
+          delete properties.csvFile;
         }
         node.properties = properties;
 
