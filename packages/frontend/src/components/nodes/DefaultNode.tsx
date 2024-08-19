@@ -4,6 +4,7 @@ import { useContext, useEffect } from "react";
 import { Handle, Position, useReactFlow } from "reactflow";
 import { WorkflowContext } from "../../context/WorkflowContext";
 import { camelCaseToTitleCase } from "@data-viz-tool/shared";
+import CustomHandle from "../handle/CustomHandle";
 
 const DefaultNode = ({ id, data, def, type, children }: any) => {
   const { deleteNodeById, edges, setEdges } = useContext(WorkflowContext);
@@ -57,7 +58,8 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
       }}
     >
       {def.inputs.map((input: any, index: any) => (
-        <Handle
+        <CustomHandle
+          nodeId={id}
           key={`input-${index}`}
           type="target"
           position={calculateHandlePosition(id, "target")}
@@ -125,7 +127,8 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
         </div>
       )}
       {def.outputs.map((output: any, index: any) => (
-        <Handle
+        <CustomHandle
+          nodeId={id}
           key={`output-${index}`}
           type="source"
           position={calculateHandlePosition(id, "source")}

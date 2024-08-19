@@ -19,6 +19,7 @@ import UserMenu from "./components/UserMenu";
 import WorkflowOptions from "./components/WorkflowOptions";
 import { WorkflowProvider } from "./context/WorkflowContext";
 import { StyledEngineProvider } from "@mui/material/styles";
+import { ReactFlowProvider } from "reactflow";
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -28,34 +29,36 @@ const App: React.FC = () => {
   return (
     <StyledEngineProvider injectFirst>
       {" "}
-      <WorkflowProvider>
-        <Router>
-          <div className="App">
-            <HeaderWithConditionalComponent />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/workflow/:id"
-                element={
-                  <ProtectedRoute>
-                    <WorkflowCanvas />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-        </Router>
-      </WorkflowProvider>
+      <ReactFlowProvider>
+        <WorkflowProvider>
+          <Router>
+            <div className="App">
+              <HeaderWithConditionalComponent />
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/workflow/:id"
+                  element={
+                    <ProtectedRoute>
+                      <WorkflowCanvas />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </div>
+          </Router>
+        </WorkflowProvider>
+      </ReactFlowProvider>
     </StyledEngineProvider>
   );
 };

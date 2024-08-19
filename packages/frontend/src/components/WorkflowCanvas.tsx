@@ -1,10 +1,5 @@
 import React, { useEffect, useContext } from "react";
-import ReactFlow, {
-  ReactFlowProvider,
-  Controls,
-  Background,
-  MiniMap,
-} from "reactflow";
+import ReactFlow, { Controls, Background, MiniMap } from "reactflow";
 import "reactflow/dist/style.css";
 import NodePanel from "./NodePanel";
 import NodeConfigPopup from "./NodeConfigPopup";
@@ -43,6 +38,7 @@ const WorkflowCanvas: React.FC = () => {
     setExecutionStatus,
     onNodesDelete,
     transformEdges,
+    onNodeDragStop,
   }: any = useContext(WorkflowContext);
 
   //useEffects
@@ -75,88 +71,85 @@ const WorkflowCanvas: React.FC = () => {
   }, []);
 
   return (
-    <ReactFlowProvider>
-      <div style={{ height: "600px" }} ref={reactFlowWrapper}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onInit={setReactFlowInstance}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onNodeDoubleClick={onNodeDoubleClick}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          fitView
-          connectionLineStyle={connectionLineStyle}
-          onNodesDelete={onNodesDelete}
-        >
-          <Controls position="top-right" />
-          <Background />
-          <MiniMap position="bottom-right" />
-        </ReactFlow>
-        <NodePanel nodeTypes={nodeDefinitions} onDragStart={onDragStart} />
-        <div
-          style={{
-            display: "flex",
-            position: "fixed",
-            top: "20px",
-            right: "20px",
-            gap: "10px",
-          }}
-        ></div>
-        {selectedNode &&
-          selectedNode.type &&
-          nodeDefinitions[selectedNode.type] && (
-            <NodeConfigPopup
-              node={selectedNode}
-              nodeDefinition={
-                nodeDefinitions[
-                  selectedNode.type as keyof typeof nodeDefinitions
-                ]
-              }
-              onClose={() => setSelectedNode(null)}
-              onUpdate={(nodeId, newData) => {
-                setNodes((nds: any) =>
-                  nds.map((node: any) =>
-                    node.id === nodeId
-                      ? {
-                          ...node,
-                          data: {
-                            ...node.data,
-                            properties: {
-                              ...node.data.properties,
-                              ...newData.properties,
-                            },
-                          },
-                        }
-                      : node
-                  )
-                );
-              }}
-            />
-          )}
-        {executionStatus && (
-          <PopupMessage
-            message={executionStatus}
-            type={
-              executionErrors
-                ? "error"
-                : executionStatus.includes("completed successfully")
-                ? "success"
-                : "loading"
+    <div style={{ height: "600px" }} ref={reactFlowWrapper}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onInit={setReactFlowInstance}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        onNodeDoubleClick={onNodeDoubleClick}
+        onNodeDragStop={onNodeDragStop}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView
+        connectionLineStyle={connectionLineStyle}
+        onNodesDelete={onNodesDelete}
+      >
+        <Controls position="top-right" />
+        <Background />
+        <MiniMap position="bottom-right" />
+      </ReactFlow>
+      <NodePanel nodeTypes={nodeDefinitions} onDragStart={onDragStart} />
+      <div
+        style={{
+          display: "flex",
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          gap: "10px",
+        }}
+      ></div>
+      {selectedNode &&
+        selectedNode.type &&
+        nodeDefinitions[selectedNode.type] && (
+          <NodeConfigPopup
+            node={selectedNode}
+            nodeDefinition={
+              nodeDefinitions[selectedNode.type as keyof typeof nodeDefinitions]
             }
-            onClose={() => {
-              setExecutionStatus(null);
-              if (!executionErrors) {
-              }
+            onClose={() => setSelectedNode(null)}
+            onUpdate={(nodeId, newData) => {
+              setNodes((nds: any) =>
+                nds.map((node: any) =>
+                  node.id === nodeId
+                    ? {
+                        ...node,
+                        data: {
+                          ...node.data,
+                          properties: {
+                            ...node.data.properties,
+                            ...newData.properties,
+                          },
+                        },
+                      }
+                    : node
+                )
+              );
             }}
           />
         )}
-      </div>
-    </ReactFlowProvider>
+      {executionStatus && (
+        <PopupMessage
+          message={executionStatus}
+          type={
+            executionErrors
+              ? "error"
+              : executionStatus.includes("completed successfully")
+              ? "success"
+              : "loading"
+          }
+          onClose={() => {
+            setExecutionStatus(null);
+            if (!executionErrors) {
+            }
+          }}
+        />
+      )}
+    </div>
   );
 };
 

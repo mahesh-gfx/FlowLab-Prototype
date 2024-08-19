@@ -17,6 +17,7 @@ import {
   ReactFlowInstance,
   Edge,
   getConnectedEdges,
+  useUpdateNodeInternals,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import {
@@ -92,6 +93,7 @@ const WorkflowProvider = ({ children }: any) => {
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
   const [workflowId, setWorkflowId] = useState<string>("");
   const [NodeConfigModalIsOpen, setNodeConfigModalIsOpen] = useState(false);
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const openModal = () => {
     setNodeConfigModalIsOpen(true);
@@ -139,6 +141,7 @@ const WorkflowProvider = ({ children }: any) => {
   );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
+    console.log("Dragover...");
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
@@ -408,6 +411,28 @@ const WorkflowProvider = ({ children }: any) => {
     });
   };
 
+  const getNodeById = useCallback(
+    (nodeId: string) => {
+      const node = nodes.find((node) => node.id === nodeId);
+      if (!node) {
+        console.warn(`Node with ID ${nodeId} not found.`);
+        return null;
+      }
+      return node;
+    },
+    [nodes]
+  );
+
+  const onNodeDragStop = (event: Event, node: any) => {
+    console.log("On node drag stop: ", event, node);
+    // const updatedEdges = edges.map((edge: any) => {
+    //   return {
+    //     ...edge,
+    //   };
+    // });
+    // setEdges(updatedEdges); // Trigger re-render of edges with updated handles
+  };
+
   return (
     <WorkflowContext.Provider
       value={{
@@ -456,6 +481,7 @@ const WorkflowProvider = ({ children }: any) => {
         NodeConfigModalIsOpen,
         openModal,
         closeModal,
+        onNodeDragStop,
       }}
     >
       {children}
