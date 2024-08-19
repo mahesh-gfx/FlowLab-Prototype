@@ -1,20 +1,12 @@
 import React, { useEffect } from "react";
 import { Handle, Position, useUpdateNodeInternals } from "reactflow";
 
-const CustomHandle = ({ nodeId, type, position, style }: any) => {
+const CustomHandle = ({ ...props }: any) => {
   const updateNodeInternals = useUpdateNodeInternals();
   useEffect(() => {
-    updateNodeInternals(nodeId);
-  }, [position]);
-  return (
-    <Handle
-      type={type}
-      position={position}
-      style={{
-        ...style,
-      }}
-    />
-  );
+    updateNodeInternals(props.nodeId);
+  }, [props.position]);
+  return <Handle {...props} />;
 };
 
 export default CustomHandle;
