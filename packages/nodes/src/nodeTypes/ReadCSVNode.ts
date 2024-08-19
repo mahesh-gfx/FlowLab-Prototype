@@ -21,7 +21,7 @@ export class ReadCSVNode extends BaseNode {
           displayName: "CSV File",
           name: "csvFile",
           type: "file",
-          default: null,
+          default: {},
           description: "Upload the CSV file to be read",
         },
       ],
