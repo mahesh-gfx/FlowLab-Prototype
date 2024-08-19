@@ -133,6 +133,33 @@
   border-color: #007bff;
 }
 
+.list-item {
+  padding: 5px 0px 12px 30px;
+  display: flex;
+  gap: 10px;
+  .remove-from-list {
+    height: 30px;
+    align-self: flex-end;
+    margin: 0 0 20px 20px;
+    background-color: white;
+    border: none;
+  }
+  .remove-from-list:hover {
+    background-color: red;
+    color: white;
+  }
+}
+
+.list-item-index {
+  position: relative;
+  left: -30px;
+  top: 40px;
+}
+
+.add-to-list-button {
+  margin-top: 12px;
+}
+
 .node-config-actions {
   display: flex;
   justify-content: flex-end;

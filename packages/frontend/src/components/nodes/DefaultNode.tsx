@@ -106,7 +106,10 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
                     <div style={{ color: "grey" }}>
                       {(data.properties[property] &&
                         typeof data.properties[property] === "object" &&
-                        Object.values(data.properties[property])[0]) ||
+                        JSON.stringify(
+                          Object.values(data.properties[property])[0]
+                        )) ||
+                        Object.values(data.properties[property])[0] ||
                         null}
                     </div>
                   </div>

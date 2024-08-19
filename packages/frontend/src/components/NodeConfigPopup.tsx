@@ -11,6 +11,7 @@ interface NodeConfigPopupProps {
   node: Node;
   nodeDefinition: {
     properties: NodeProperty[];
+    [key: string]: any;
   };
   onClose: () => void;
   onUpdate: (nodeId: string, newData: Partial<NodeData>) => void;
@@ -70,7 +71,42 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
     }
   };
 
+  const handleAddListItem = (listName: string, defaultItem: any) => {
+    const updatedList = [...(properties[listName] || []), defaultItem];
+    console.log("Updated list: ", updatedList);
+    handleChange(listName, updatedList);
+  };
+
+  const handleRemoveListItem = (listName: string, index: number) => {
+    const updatedList = [...(properties[listName] || [])];
+    updatedList.splice(index, 1);
+    handleChange(listName, updatedList);
+  };
+
+  const handleListItemChange = (
+    listName: string,
+    index: number,
+    subName: string,
+    subValue: any
+  ) => {
+    console.log(
+      "handling list item change... \n",
+      "listname: ",
+      listName,
+      "index",
+      index,
+      "subname:",
+      subName,
+      "subValue:",
+      subValue
+    );
+    const updatedList = [...(properties[listName] || [])];
+    updatedList[index] = { ...updatedList[index], [subName]: subValue };
+    handleChange(listName, updatedList);
+  };
+
   const handleSubmit = () => {
+    console.log("Saving form...");
     onUpdate(node.id, config);
     onClose();
   };
@@ -89,6 +125,7 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
   };
 
   const renderConfigurationForm = (): JSX.Element => {
+    console.log("rendering configuration form...");
     return (
       <div className="form-group-wrapper">
         {nodeDefinition.properties.map((prop) => {
@@ -213,6 +250,108 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
                   )}
                 </div>
               );
+            case "list":
+              try {
+                return (
+                  <div key={prop.name} className="form-group">
+                    <label>{prop.displayName}</label>
+                    <span className="form-group-description">
+                      {prop.description}
+                    </span>
+                    {(value || []).map((item: any, index: any) => (
+                      <div key={index} className="list-item">
+                        <span className="list-item-index">{index + 1}.</span>
+
+                        {prop.itemType.properties.map((subProp: any) => {
+                          const subValue = item[subProp.name];
+                          console.log("subValue: ", subValue);
+                          switch (subProp.type) {
+                            case "string":
+                              return (
+                                <div key={subProp.name} className="form-group">
+                                  <label
+                                    htmlFor={`${prop.name}-${index}-${subProp.name}`}
+                                  >
+                                    {subProp.displayName}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id={`${prop.name}-${index}-${subProp.name}`}
+                                    value={subValue}
+                                    onChange={(e) =>
+                                      handleListItemChange(
+                                        prop.name,
+                                        index,
+                                        subProp.name,
+                                        e.target.value
+                                      )
+                                    }
+                                  />
+                                </div>
+                              );
+                            case "options":
+                              return (
+                                <div key={subProp.name} className="form-group">
+                                  <label
+                                    htmlFor={`${prop.name}-${index}-${subProp.name}`}
+                                  >
+                                    {subProp.displayName}
+                                  </label>
+                                  <select
+                                    id={`${prop.name}-${index}-${subProp.name}`}
+                                    value={subValue}
+                                    onChange={(e) =>
+                                      handleListItemChange(
+                                        prop.name,
+                                        index,
+                                        subProp.name,
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    {subProp.options?.map((option: any) => (
+                                      <option
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              );
+                            default:
+                              return null;
+                          }
+                        })}
+                        <button
+                          onClick={() => handleRemoveListItem(prop.name, index)}
+                          className="button remove-from-list"
+                        >
+                          Remove {prop.displayName}
+                        </button>
+                      </div>
+                    ))}
+
+                    <button
+                      className="button add-to-list-button"
+                      onClick={() =>
+                        handleAddListItem(prop.name, {
+                          column: "",
+                          value: "",
+                          operation: "",
+                        })
+                      }
+                    >
+                      Add {prop.displayName}
+                    </button>
+                  </div>
+                );
+              } catch (error) {
+                console.log("Error in list...");
+                console.error(error);
+              }
+
             default:
               return null;
           }

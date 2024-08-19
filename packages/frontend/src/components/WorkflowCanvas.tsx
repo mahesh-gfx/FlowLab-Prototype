@@ -58,10 +58,10 @@ const WorkflowCanvas: React.FC = () => {
 
     if (id != "new")
       getWorkflowById(id).then((response) => {
-        console.log("Got workflowby id: Nodes", response.data.workflow.nodes);
-        console.log("Got workflowby id: Edges", response.data.workflow.edges);
+        console.log("Got workflowby id: Nodes", response?.data.workflow.nodes);
+        console.log("Got workflowby id: Edges", response?.data.workflow.edges);
 
-        setNodes(response.data.workflow.nodes);
+        setNodes(response?.data.workflow.nodes);
         setEdges(transformEdges(response.data.workflow.edges));
       });
     else {
