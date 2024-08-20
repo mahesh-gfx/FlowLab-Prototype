@@ -39,6 +39,7 @@ const WorkflowCanvas: React.FC = () => {
     onNodesDelete,
     transformEdges,
     onNodeDragStop,
+    handleNodeClick,
   }: any = useContext(WorkflowContext);
 
   //useEffects
@@ -81,6 +82,7 @@ const WorkflowCanvas: React.FC = () => {
         onInit={setReactFlowInstance}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        onNodeClick={handleNodeClick}
         onNodeDoubleClick={onNodeDoubleClick}
         onNodeDragStop={onNodeDragStop}
         nodeTypes={nodeTypes}

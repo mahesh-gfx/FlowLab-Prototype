@@ -113,6 +113,10 @@ const WorkflowProvider = ({ children }: any) => {
   const [NodeConfigModalIsOpen, setNodeConfigModalIsOpen] = useState(false);
   const callbackRef = useRef<(() => void) | null>(null);
   const prevWorkflowIdRef = useRef<string | null>(null);
+  const [clickTimeout, setClickTimeout] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const CLICK_DELAY = 150; // Fixed timeout duration in milliseconds for single click on node
 
   useEffect(() => {
     // Extract the workflow ID from the URL
@@ -233,14 +237,35 @@ const WorkflowProvider = ({ children }: any) => {
     [reactFlowInstance, nodes, setNodes, nodeDefinitions]
   );
 
+  const handleNodeClick = useCallback(
+    (_: any, node: Node<NodeData>) => {
+      // Clear any existing timeout
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        setClickTimeout(null);
+      }
+      const timeout = setTimeout(() => {
+        reactFlowInstance?.fitView({ nodes: [node], duration: 150 }); // Adjust duration as needed
+      }, CLICK_DELAY);
+
+      setClickTimeout(timeout);
+    },
+    [reactFlowInstance?.fitView, clickTimeout]
+  );
+
   const onNodeDoubleClick = useCallback(
     (event: React.MouseEvent, node: Node<NodeData>) => {
+      // Clear the single click timeout
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+        setClickTimeout(null);
+      }
       setSelectedNode(node);
       setTimeout(() => {
         setNodeConfigModalIsOpen(true);
       }, 100);
     },
-    []
+    [clickTimeout]
   );
 
   const onDragStart = useCallback(
@@ -479,18 +504,6 @@ const WorkflowProvider = ({ children }: any) => {
     });
   };
 
-  const getNodeById = useCallback(
-    (nodeId: string) => {
-      const node = nodes.find((node) => node.id === nodeId);
-      if (!node) {
-        console.warn(`Node with ID ${nodeId} not found.`);
-        return null;
-      }
-      return node;
-    },
-    [nodes]
-  );
-
   const onNodeDragStop = (event: Event, node: any) => {
     console.log("On node drag stop: ", event, node);
     // const updatedEdges = edges.map((edge: any) => {
@@ -550,6 +563,10 @@ const WorkflowProvider = ({ children }: any) => {
         openModal,
         closeModal,
         onNodeDragStop,
+        handleNodeClick,
+        clickTimeout,
+        setClickTimeout,
+        CLICK_DELAY,
       }}
     >
       {children}
