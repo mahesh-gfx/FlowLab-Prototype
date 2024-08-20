@@ -13,12 +13,12 @@ export class NormalizeDataNode extends BaseNode {
       icon: "normalize",
       color: "#ECCC12",
       inputs: ["data"],
-      outputs: ["normalizedData"],
+      outputs: ["data"],
       properties: [
         {
           displayName: "Normalization Method",
           name: "normalizationMethod",
-          type: "string",
+          type: "options",
           default: "min-max",
           description: "Method to normalize data (min-max, z-score)",
           options: [

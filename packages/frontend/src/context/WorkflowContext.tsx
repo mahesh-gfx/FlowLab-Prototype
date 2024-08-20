@@ -17,7 +17,6 @@ import {
   ReactFlowInstance,
   Edge,
   getConnectedEdges,
-  useUpdateNodeInternals,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import {
@@ -75,6 +74,25 @@ const connectionLineStyle = { stroke: "#fffff" };
 
 const WorkflowContext = createContext<any>(null);
 
+function replacePathSegment(
+  path: string,
+  targetSegment: string,
+  replacement: string
+): string {
+  const parts = path.split("/");
+  const newPath = parts
+    .map((part) => (part === targetSegment ? replacement : part))
+    .join("/");
+  return newPath;
+}
+
+function updateUrlPath(newPath: string): void {
+  const currentUrl = window.location.href;
+  const url = new URL(currentUrl);
+  url.pathname = newPath;
+  history.replaceState({}, "", url.toString());
+}
+
 const WorkflowProvider = ({ children }: any) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([initialStartNode]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -93,7 +111,33 @@ const WorkflowProvider = ({ children }: any) => {
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
   const [workflowId, setWorkflowId] = useState<string>("");
   const [NodeConfigModalIsOpen, setNodeConfigModalIsOpen] = useState(false);
-  const updateNodeInternals = useUpdateNodeInternals();
+  const callbackRef = useRef<(() => void) | null>(null);
+  const prevWorkflowIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Extract the workflow ID from the URL
+    const path = window.location.pathname;
+    const parts = path.split("/");
+    const id = parts[parts.length - 1]; // Get the last part of the path
+
+    if (path.startsWith("/workflow/")) {
+      console.log("ID: ", id);
+      setTimeout(() => {
+        setWorkflowId(`${id}`);
+      }, 200);
+    }
+
+    console.log("Updated workflow id: ", workflowId);
+  }, [window.location.pathname]);
+
+  useEffect(() => {
+    console.log("NEW USE EFFECT");
+    // Execute the callback function only if previous workflowId was 'new'
+    if (callbackRef.current && prevWorkflowIdRef.current === "new") {
+      callbackRef.current();
+      callbackRef.current = null; // Reset the callback after execution
+    }
+  }, [workflowId]);
 
   const openModal = () => {
     setNodeConfigModalIsOpen(true);
@@ -359,7 +403,25 @@ const WorkflowProvider = ({ children }: any) => {
           handleNodeExecuted,
           handleNodeError,
           handleWorkflowCompleted
-        );
+        ).then((response: any) => {
+          const path = window.location.pathname;
+          const parts = path.split("/");
+          const id = parts[parts.length - 1]; // Get the last part of the path
+
+          if (id === "new" && typeof response.data.workflowId === "string") {
+            // Set the callback function to be executed after state update if previous value was 'new'
+            callbackRef.current = () => {
+              console.log("Workflow ID updated to:", response.data.workflowId);
+              updateUrlPath(
+                replacePathSegment(path, "new", response.data.workflowId)
+              );
+            };
+
+            // Store the current workflowId to prevWorkflowIdRef before updating
+            prevWorkflowIdRef.current = workflowId;
+            setWorkflowId(response.data.workflowId);
+          }
+        });
       } catch (error: any) {
         console.error("Workflow execution failed:", error);
         setExecutionErrors([{ nodeId: "global", error: error.message }]);
@@ -367,7 +429,7 @@ const WorkflowProvider = ({ children }: any) => {
         setExecutionStatus("Workflow execution failed.");
       }
     }
-  }, [reactFlowInstance, setNodes]);
+  }, [reactFlowInstance, setNodes, workflowId]);
 
   const onNodesDelete = (deletedNodes: any) => {
     // Find all edges connected to the deleted nodes

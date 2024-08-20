@@ -11,12 +11,12 @@ export const executeWorkflow = (
   onNodeExecuted: (data: { nodeId: string; output: any }) => void,
   onNodeError: (data: { nodeId: string; error: string }) => void,
   onWorkflowCompleted: (success: boolean) => void
-): void => {
+): Promise<any> => {
   // Get the token from the Redux store
   const token = store.getState().auth.token;
 
   // Start the workflow execution
-  axios
+  return axios
     .post(
       `${API_URL}/workflow/execute-workflow`,
       { workflowId, workflowData },
@@ -26,8 +26,8 @@ export const executeWorkflow = (
         },
       }
     )
-    .then(() => {
-      console.log("Workflow execution started");
+    .then((response) => {
+      console.log("Workflow execution started, ", response.data.workflowId);
 
       // Set up the SSE connection with the Authorization header
       console.log("Setting up EventSource");
@@ -84,6 +84,8 @@ export const executeWorkflow = (
         console.error("EventSource failed:", error);
         eventSource.close();
       };
+
+      return response;
     })
     .catch((error) => {
       console.error("Failed to start workflow execution:", error);

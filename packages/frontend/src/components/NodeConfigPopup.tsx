@@ -6,6 +6,12 @@ import VirtualizedTable from "./VirtualizedTable";
 import "./styles/nodeConfigPopup.css";
 import VirtualizedJsonView from "./VirtualisedJSONViewer";
 import { WorkflowContext } from "../context/WorkflowContext";
+import ControlledCheckbox from "./Checkbox";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
 
 interface NodeConfigPopupProps {
   node: Node;
@@ -184,7 +190,7 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
                   />
                 </div>
               );
-            case "boolean":
+            case "boolean": {
               return (
                 <div key={prop.name} className="form-group">
                   <label htmlFor={prop.name}>
@@ -193,14 +199,39 @@ const NodeConfigPopup: React.FC<NodeConfigPopupProps> = ({
                       {prop.description}
                     </span>
                   </label>
-                  <input
-                    type="checkbox"
+                  <FormControl
+                    component="fieldset"
+                    style={{ padding: "5px 15px" }}
+                  >
+                    <RadioGroup
+                      row
+                      name="row-radio-buttons-group"
+                      onChange={(e) => handleChange(prop.name, e.target.value)}
+                      value={value}
+                    >
+                      <FormControlLabel
+                        value={true}
+                        control={<Radio />}
+                        label="True"
+                      />
+                      <FormControlLabel
+                        value={false}
+                        control={<Radio />}
+                        label="False"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                  {/* <ControlledCheckbox
+                    key={prop.name}
                     id={prop.name}
-                    checked={value}
-                    onChange={(e) => handleChange(prop.name, e.target.checked)}
-                  />
+                    // checked={false}
+                    onChange={(checked: boolean) =>
+                      handleChange(prop.name, checked)
+                    }
+                  /> */}
                 </div>
               );
+            }
             case "options":
               return (
                 <div key={prop.name} className="form-group">

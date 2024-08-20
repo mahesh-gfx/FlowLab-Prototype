@@ -14,7 +14,7 @@ export class FilterDataNode extends BaseNode {
       icon: "filter",
       color: "#E621F5",
       inputs: ["data"],
-      outputs: ["filteredData"],
+      outputs: ["data"],
       properties: [
         {
           displayName: "Filter Criteria",
@@ -96,7 +96,6 @@ export class FilterDataNode extends BaseNode {
   }
 
   applyFilters(data: any[], criteria: any[]): any[] {
-    console.log("DATA IN FILTER: ", data);
     return data.filter((row) => {
       return criteria.every(({ column, value, operation }) => {
         const cellValue = row[column];

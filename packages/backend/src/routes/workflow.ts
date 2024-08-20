@@ -36,9 +36,13 @@ router.post("/execute-workflow", async (req: Request, res: Response) => {
     );
 
     if (response != null) {
+      console.log("recieved workflow response: ", response);
       req.app.locals.pendingWorkflow = workflowData;
       req.app.locals.authorization = req.headers.authorization;
-      res.status(200).send("Workflow received");
+      res.status(200).send({
+        message: "Workflow Recieved!",
+        workflowId: response.id,
+      });
     } else res.status(500).send("Error saving workflow before execution!");
   } else {
     const response = await workflowService.updateWorkflow(
