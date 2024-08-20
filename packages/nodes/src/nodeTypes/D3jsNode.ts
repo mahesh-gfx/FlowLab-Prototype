@@ -13,7 +13,7 @@ export class D3JsNode extends BaseNode {
       icon: "chart-bar",
       color: "#4287f5",
       inputs: ["data"],
-      outputs: ["data"],
+      outputs: [],
       properties: [
         {
           displayName: "Chart Type",
