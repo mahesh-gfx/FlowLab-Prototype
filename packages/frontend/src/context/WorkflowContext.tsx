@@ -326,13 +326,18 @@ const WorkflowProvider = ({ children }: any) => {
       [data.nodeId]: data.output,
     }));
 
-    // Update the node data with the execution result
+    // Update the node data with the execution result and remove the error property
     setNodes((nds) =>
-      nds.map((node) =>
-        node.id === data.nodeId
-          ? { ...node, data: { ...node.data, output: data.output } }
-          : node
-      )
+      nds.map((node) => {
+        if (node.id === data.nodeId) {
+          const { error, ...restData } = node.data; // Destructure to remove 'error'
+          return {
+            ...node,
+            data: { ...restData, output: data.output }, // Use the rest of the data without 'error'
+          };
+        }
+        return node;
+      })
     );
   };
 
@@ -394,6 +399,7 @@ const WorkflowProvider = ({ children }: any) => {
       };
       try {
         setExecutionResults([]); // Reset results before starting new execution
+        setExecutionErrors([]);
         setIsExecuting(true);
         setExecutionStatus("Executing workflow...");
         console.log("Executionresults: ", executionResults);
