@@ -59,16 +59,29 @@ export class D3JsNode extends BaseNode {
   }
 
   async execute(inputs: Record<string, any>): Promise<any> {
-    const { reducedData, originalData } = inputs.data.data.json;
+    let data: any = {};
+    let preparedData: any = [];
 
-    // Log the input data
-    console.log("Input data:", reducedData);
+    if (
+      inputs.data.data.json.reducedData != null &&
+      inputs.data.data.json.reducedData != undefined &&
+      inputs.data.data.json.originalData != null &&
+      inputs.data.data.json.originalData != undefined
+    ) {
+      data.reducedData = inputs.data.data.json.reducedData;
+      data.originalData = inputs.data.data.json.originalData;
 
-    // Prepare the data for visualization
-    const preparedData = reducedData.map((d: any, index: number) => ({
-      ...reducedData[index],
-      ...originalData[index], // Merge properties from originalData at the same index
-    }));
+      // Log the input data
+      console.log("Input data:", data.reducedData);
+
+      // Prepare the data for visualization
+      preparedData = data.reducedData.map((d: any, index: number) => ({
+        ...data.reducedData[index],
+        ...data.originalData[index], // Merge properties from originalData at the same index
+      }));
+    } else {
+      preparedData = inputs.data.data.json;
+    }
 
     // const uniqueLabels = [
     //   ...new Set(preparedData.map((item: any) => item[category])),
