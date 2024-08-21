@@ -1,6 +1,7 @@
 export * from "./BaseNode";
 export * from "./nodeTypes/StartNode";
 export * from "./nodeTypes/ReadCSVNode";
+export * from "./nodeTypes/DataSampling";
 export * from "./nodeTypes/CleanDataNode";
 export * from "./nodeTypes/FilterDataNode";
 export * from "./nodeTypes/NormaliseDataNode";
