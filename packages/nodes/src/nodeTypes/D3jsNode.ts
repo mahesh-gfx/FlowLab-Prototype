@@ -8,7 +8,7 @@ export class D3JsNode extends BaseNode {
   static getNodeDefinition(): NodeDefinition {
     return {
       name: "D3JsNode",
-      displayName: "D3.js Visualization",
+      displayName: "Charts and Plots",
       description: "Visualizes data using D3.js",
       icon: "chart-bar",
       color: "#4287f5",
