@@ -34,6 +34,7 @@ import DefaultNode from "../components/nodes/DefaultNode";
 import { StartNode } from "@data-viz-tool/nodes";
 import D3Node from "../components/nodes/D3Node";
 import ButtonEdge from "../components/edges/ButtonEdge";
+import ScatterPlotMatrixNode from "../components/nodes/ScatterPlotMatrixNode";
 
 interface NodeDefinition {
   name: string;
@@ -159,6 +160,15 @@ const WorkflowProvider = ({ children }: any) => {
         switch (type) {
           case "D3JsNode":
             return <D3Node id={id} data={data} def={def} type={type} />;
+          case "ScatterPlotMatrixNode":
+            return (
+              <ScatterPlotMatrixNode
+                id={id}
+                data={data}
+                def={def}
+                type={type}
+              />
+            );
 
           default:
             return <DefaultNode id={id} data={data} def={def} type={type} />;

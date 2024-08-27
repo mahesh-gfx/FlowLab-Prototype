@@ -8,5 +8,6 @@ export * from "./nodeTypes/NormaliseDataNode";
 export * from "./nodeTypes/DimensionalityReductionNode";
 export * from "./nodeTypes/D3jsNode";
 export * from "./nodeTypes/DataBinningNode";
+export * from "./nodeTypes/ScatterPlotMatrixNode";
 
 // Export other node types as you create them
