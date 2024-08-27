@@ -9,5 +9,6 @@ export * from "./nodeTypes/DimensionalityReductionNode";
 export * from "./nodeTypes/D3jsNode";
 export * from "./nodeTypes/DataBinningNode";
 export * from "./nodeTypes/ScatterPlotMatrixNode";
+export * from "./nodeTypes/ParallelCoordinatesNode";
 
 // Export other node types as you create them

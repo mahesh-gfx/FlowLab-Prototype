@@ -35,6 +35,7 @@ import { StartNode } from "@data-viz-tool/nodes";
 import D3Node from "../components/nodes/D3Node";
 import ButtonEdge from "../components/edges/ButtonEdge";
 import ScatterPlotMatrixNode from "../components/nodes/ScatterPlotMatrixNode";
+import ParallelCoordinates from "../components/nodes/ParallelCoordinatesNode";
 
 interface NodeDefinition {
   name: string;
@@ -168,6 +169,10 @@ const WorkflowProvider = ({ children }: any) => {
                 def={def}
                 type={type}
               />
+            );
+          case "ParallelCoordinatesNode":
+            return (
+              <ParallelCoordinates id={id} data={data} def={def} type={type} />
             );
 
           default:

@@ -3,7 +3,12 @@ import * as d3 from "d3";
 import DefaultNode from "./DefaultNode";
 import Modal from "react-modal";
 
-const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
+interface DataPoint {
+  [key: string]: number | string;
+}
+
+const ParallelCoordinates = ({ id, data, def, type }: any) => {
+  const containerRef = useRef(null);
   const expandedChartRef = useRef<HTMLDivElement | null>(null);
   const miniChartRef = useRef<HTMLDivElement | null>(null);
   const [hasOutputData, setHasOutputData] = useState(false);
@@ -35,38 +40,48 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
     }
   };
 
-  // Effect to handle data updates
   useEffect(() => {
     if (data && data.output?.data?.json) {
-      // Clear previous chart
-      if (expandedChartRef.current) {
-        d3.select(expandedChartRef.current).selectAll("*").remove();
-      }
-      if (miniChartRef.current) {
-        d3.select(miniChartRef.current).selectAll("*").remove();
-      }
-
       setHasOutputData(!!data.output);
-      if (data) {
-        renderMiniChart();
-        console.log("Rendered a scatterplot matrix miniChart");
-      }
+      renderMiniChart();
+      console.log("Rendering a parallel coordinate plot mini");
     }
   }, [JSON.stringify(data)]);
 
-  const renderScatterPlotMatrix = (
-    data: any,
+  const renderMiniChart = () => {
+    renderParallelCoordinates(
+      data.output?.data?.json,
+      data.properties?.variables,
+      data.properties?.colorBy,
+      miniChartRef.current,
+      600,
+      600
+    );
+  };
+  const renderExpandedChart = () => {
+    renderParallelCoordinates(
+      data.output?.data?.json,
+      data.properties?.variables,
+      data.properties?.colorBy,
+      expandedChartRef.current,
+      600,
+      600
+    );
+  };
+
+  const renderParallelCoordinates = (
+    data: DataPoint | any,
     variables: any,
     colorBy: any,
     container: any,
     renderWidth: number,
     renderHeight: number
   ) => {
-    // Clear previous SVG
     d3.select(container).selectAll("*").remove();
 
-    const size = 200; // Size of each scatter plot
-    const padding = 20; // Padding between plots
+    const margin = { top: 30, right: 10, bottom: 10, left: 10 };
+    const width = renderWidth - margin.left - margin.right;
+    const height = renderHeight - margin.top - margin.bottom;
 
     // Determine variables to use
     const variablesArray = variables
@@ -80,119 +95,61 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
     const varsToUse =
       variablesArray.length > 0 ? variablesArray : Object.keys(data[0]);
 
-    // Adjust margins for smaller containers
-    const margin = { top: 10, right: 10, bottom: 30, left: 30 };
-    const width = renderWidth - margin.left - margin.right;
-    const height = renderHeight - margin.top - margin.bottom;
-
     const svg = d3
       .select(container)
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .attr("viewBox", `0 0 ${renderHeight} ${renderWidth}`)
-      .attr("preserveAspectRatio", "xMidYMid meet")
-      .style("background-color", "white");
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scalePoint().range([0, width]).padding(1).domain(varsToUse);
+    const y: { [key: string]: d3.ScaleLinear<number, number> } = {};
+
+    varsToUse.forEach((variable: any) => {
+      //@ts-ignore
+      y[variable] = d3
+        .scaleLinear()
+        .domain(d3.extent(data, (d: any) => d[variable]) as [any, any])
+        .range([height, 0]);
+    });
 
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-    // Add tooltip
-    const tooltip = d3
-      .select(container)
-      .append("div")
-      .style("position", "absolute")
-      .style("visibility", "hidden")
-      .style("background", "#fff")
-      .style("border", "1px solid #d3d3d3")
-      .style("padding", "5px")
-      .style("border-radius", "3px")
-      .style("font-size", "10px") // Reduce tooltip font size
-      .style("pointer-events", "none");
+    svg
+      .selectAll("path")
+      .data(data)
+      .enter()
+      .append("path")
+      .attr("d", (d) =>
+        d3.line()(
+          varsToUse.map((variable: any) => [
+            x(variable),
+            //@ts-ignore
+            y[variable](d[variable] || 0),
+          ])
+        )
+      )
+      .style("fill", "none")
+      .style("stroke", (d: any) => color(d[colorBy]))
+      .style("opacity", 0.7);
 
-    varsToUse.forEach((xVar: any, i: any) => {
-      varsToUse.forEach((yVar: any, j: any) => {
-        const g = svg
-          .append("g")
-          .attr(
-            "transform",
-            `translate(${i * size + i * padding},${j * size + j * padding})`
-          );
-
-        const xExtent = d3.extent(data, (d: any) => d[xVar]);
-        const yExtent = d3.extent(data, (d: any) => d[yVar]);
-
-        const x = d3
-          .scaleLinear()
-          .domain(xExtent as [any, any])
-          .range([padding / 2, size - padding / 2]);
-
-        const y = d3
-          .scaleLinear()
-          .domain(yExtent as [any, any])
-          .range([size - padding / 2, padding / 2]);
-
-        g.append("rect")
-          .attr("fill", "none")
-          .attr("stroke", "#aaa")
-          .attr("width", size)
-          .attr("height", size);
-
-        g.selectAll("circle")
-          .data(data)
-          .enter()
-          .append("circle")
-          .attr("cx", (d: any) => x(d[xVar]))
-          .attr("cy", (d: any) => y(d[yVar]))
-          .attr("r", 3)
-          .attr("fill", (d: any) => color(d[colorBy]))
-          .on("mouseover", function (event, d) {
-            tooltip
-              .style("visibility", "visible")
-              .text(`${JSON.stringify(d, null, 2)}`);
-            d3.select(this).attr("r", 4); // Highlight point
-          })
-          .on("mousemove", function (event) {
-            const [mouseX, mouseY] = d3.pointer(event);
-            tooltip
-              .style("top", `${mouseY + 15}px`)
-              .style("left", `${mouseX + 15}px`);
-          })
-          .on("mouseout", function () {
-            tooltip.style("visibility", "hidden");
-            d3.select(this).attr("r", Math.max(1.5, Math.min(2.5, width / 50))); // Reset point size
-          });
-
-        if (i === j) {
-          g.append("text")
-            .attr("x", size / 2)
-            .attr("y", size / 2)
-            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .text(xVar);
-        }
-      });
-    });
-  };
-
-  const renderMiniChart = () => {
-    renderScatterPlotMatrix(
-      data.output?.data?.json,
-      data.properties?.variables,
-      data.properties?.colorBy,
-      miniChartRef.current,
-      600,
-      600
-    );
-  };
-  const renderExpandedChart = () => {
-    renderScatterPlotMatrix(
-      data.output?.data?.json,
-      data.properties?.variables,
-      data.properties?.colorBy,
-      expandedChartRef.current,
-      600,
-      600
-    );
+    svg
+      .selectAll("g")
+      .data(varsToUse)
+      .enter()
+      .append("g")
+      .attr("transform", (d: any) => `translate(${x(d)})`)
+      .each(function (d: any) {
+        //@ts-ignore
+        d3.select(this).call(d3.axisLeft(y[d]));
+      })
+      .append("text")
+      .style("text-anchor", "middle")
+      .attr("y", -9)
+      .text((d: any) => d)
+      .style("fill", "black");
   };
 
   return (
@@ -272,4 +229,4 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
   );
 };
 
-export default ScatterPlotMatrixNode;
+export default ParallelCoordinates;
