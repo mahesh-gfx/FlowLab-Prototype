@@ -3,11 +3,7 @@ import * as d3 from "d3";
 import DefaultNode from "./DefaultNode";
 import Modal from "react-modal";
 
-interface DataPoint {
-  [key: string]: number | string;
-}
-
-const ParallelCoordinates = ({ id, data, def, type }: any) => {
+const CorrelationHeatmap = ({ id, data, def, type }: any) => {
   const expandedChartRef = useRef<HTMLDivElement | null>(null);
   const miniChartRef = useRef<HTMLDivElement | null>(null);
   const [hasOutputData, setHasOutputData] = useState(false);
@@ -43,112 +39,139 @@ const ParallelCoordinates = ({ id, data, def, type }: any) => {
     if (data && data.output?.data?.json) {
       setHasOutputData(!!data.output);
       renderMiniChart();
+
       console.log("Rendering a parallel coordinate plot mini");
     }
   }, [JSON.stringify(data)]);
 
   const renderMiniChart = () => {
-    renderParallelCoordinates(
+    renderCorrelationHeatmap(
       data.output?.data?.json,
-      data.properties?.variables,
-      data.properties?.colorBy,
       miniChartRef.current,
       600,
       600
     );
   };
   const renderExpandedChart = () => {
-    renderParallelCoordinates(
+    renderCorrelationHeatmap(
       data.output?.data?.json,
-      data.properties?.variables,
-      data.properties?.colorBy,
       expandedChartRef.current,
       600,
       600
     );
   };
 
-  const renderParallelCoordinates = (
-    data: DataPoint | any,
-    variables: any,
-    colorBy: any,
+  const renderCorrelationHeatmap = (
+    correlationData: any,
     container: any,
     renderWidth: number,
     renderHeight: number
   ) => {
     d3.select(container).selectAll("*").remove();
 
-    const margin = { top: 30, right: 10, bottom: 10, left: 10 };
+    const margin = { top: 50, right: 80, bottom: 30, left: 80 };
     const width = renderWidth - margin.left - margin.right;
     const height = renderHeight - margin.top - margin.bottom;
-
-    // Determine variables to use
-    const variablesArray = variables
-      ? variables
-          .split(",")
-          .map((v: any) => v.trim())
-          .filter((v: any) => v)
-      : Object.keys(data[0]);
-
-    // Use all variables if the list is empty
-    const varsToUse =
-      variablesArray.length > 0 ? variablesArray : Object.keys(data[0]);
 
     const svg = d3
       .select(container)
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
-      .attr("viewBox", `0 0 ${renderHeight} ${renderWidth}`)
+      .attr("viewBox", `0 0 ${renderWidth} ${renderHeight}`)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const x = d3.scalePoint().range([0, width]).padding(1).domain(varsToUse);
-    const y: { [key: string]: d3.ScaleLinear<number, number> } = {};
+    const x = d3
+      .scaleBand()
+      .range([0, width])
+      .domain(correlationData.map((d: any) => d.x))
+      .padding(0.01);
+    const y = d3
+      .scaleBand()
+      .range([height, 0])
+      .domain(correlationData.map((d: any) => d.y))
+      .padding(0.01);
 
-    varsToUse.forEach((variable: any) => {
-      //@ts-ignore
-      y[variable] = d3
-        .scaleLinear()
-        .domain(d3.extent(data, (d: any) => d[variable]) as [any, any])
-        .range([height, 0]);
-    });
+    const color = d3.scaleSequential(d3.interpolateRdBu).domain([-1, 1]);
 
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
-
+    // Add correlation rectangles
     svg
-      .selectAll("path")
-      .data(data)
+      .selectAll("rect")
+      .data(correlationData)
       .enter()
-      .append("path")
-      .attr("d", (d) =>
-        d3.line()(
-          varsToUse.map((variable: any) => [
-            x(variable),
-            //@ts-ignore
-            y[variable](d[variable] || 0),
-          ])
-        )
-      )
-      .style("fill", "none")
-      .style("stroke", (d: any) => color(d[colorBy]))
-      .style("opacity", 0.7);
+      .append("rect")
+      .attr("x", (d: any) => x(d.x) as any)
+      .attr("y", (d: any) => y(d.y) as any)
+      .attr("width", x.bandwidth())
+      .attr("height", y.bandwidth())
+      .style("fill", (d: any) => color(d.correlation));
 
+    // Add correlation text
     svg
-      .selectAll("g")
-      .data(varsToUse)
+      .selectAll("text")
+      .data(correlationData)
       .enter()
-      .append("g")
-      .attr("transform", (d: any) => `translate(${x(d)})`)
-      .each(function (d: any) {
-        //@ts-ignore
-        d3.select(this).call(d3.axisLeft(y[d]));
-      })
       .append("text")
-      .style("text-anchor", "middle")
-      .attr("y", -9)
-      .text((d: any) => d)
-      .style("fill", "black");
+      .attr("x", (d: any) => (x(d.x as any) as any) + x.bandwidth() / 2)
+      .attr("y", (d: any) => (y(d.y as any) as any) + y.bandwidth() / 2)
+      .attr("dy", ".35em")
+      .attr("text-anchor", "middle")
+      .style("fill", "black")
+      .style("font-size", "10px")
+      .text((d: any) => d.correlation.toFixed(2));
+
+    svg
+      .append("g")
+      .call(d3.axisBottom(x))
+      .attr("transform", `translate(0,${height})`);
+    svg.append("g").call(d3.axisLeft(y));
+
+    // Add color scale legend
+    const legendWidth = 20;
+    const legendHeight = height;
+    const legendSvg = svg
+      .append("g")
+      .attr("transform", `translate(${width + 10}, 0)`);
+
+    const legend = legendSvg
+      .append("defs")
+      .append("svg:linearGradient")
+      .attr("id", "gradient")
+      .attr("x1", "0%")
+      .attr("y1", "100%")
+      .attr("x2", "0%")
+      .attr("y2", "0%")
+      .attr("spreadMethod", "pad");
+
+    legend
+      .append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", color(-1))
+      .attr("stop-opacity", 1);
+
+    legend
+      .append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", color(1))
+      .attr("stop-opacity", 1);
+
+    legendSvg
+      .append("rect")
+      .attr("width", legendWidth)
+      .attr("height", legendHeight)
+      .style("fill", "url(#gradient)");
+
+    const legendScale = d3
+      .scaleLinear()
+      .range([legendHeight, 0])
+      .domain([-1, 1]);
+
+    legendSvg
+      .append("g")
+      .attr("class", "axis")
+      .attr("transform", `translate(${legendWidth}, 0)`)
+      .call(d3.axisRight(legendScale).ticks(5));
   };
 
   return (
@@ -228,4 +251,4 @@ const ParallelCoordinates = ({ id, data, def, type }: any) => {
   );
 };
 
-export default ParallelCoordinates;
+export default CorrelationHeatmap;

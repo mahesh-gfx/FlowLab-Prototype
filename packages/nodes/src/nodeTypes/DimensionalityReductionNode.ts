@@ -12,7 +12,7 @@ export class DimensionalityReductionNode extends BaseNode {
       displayName: "Dimensionality Reduction",
       description: "Applies a dimensionality reduction algorithm on the data",
       icon: "ReduceDimensions",
-      color: "#FF5733",
+      color: "#F53900",
       inputs: ["data"],
       outputs: ["data"],
       properties: [

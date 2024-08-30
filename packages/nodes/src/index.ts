@@ -10,5 +10,6 @@ export * from "./nodeTypes/D3jsNode";
 export * from "./nodeTypes/DataBinningNode";
 export * from "./nodeTypes/ScatterPlotMatrixNode";
 export * from "./nodeTypes/ParallelCoordinatesNode";
+export * from "./nodeTypes/CorrelationHeatmapNode";
 
 // Export other node types as you create them

@@ -103,7 +103,7 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
               return typeof data?.properties[property] == "string" ||
                 typeof data?.properties[property] == "number" ? (
                 <div style={{ display: "flex", fontSize: "6px" }}>
-                  <div style={{ fontWeight: "bold" }}>
+                  <div style={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
                     {camelCaseToTitleCase(property)} :&nbsp; &nbsp;
                   </div>
                   <div style={{ color: "grey" }}>

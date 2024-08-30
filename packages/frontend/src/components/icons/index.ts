@@ -9,6 +9,7 @@ import Normalize from "./Normalize";
 import PlayCircle from "./PlayCircle";
 import ReduceDimension from "./ReduceDimensions";
 import Sampling from "./Sampling";
+import CorrelationHeatmap from "./CorrelationHeatmap";
 
 export interface IconProps {
   color?: string;
@@ -27,6 +28,7 @@ const icons: Record<string, React.FC> = {
   Bin: Binning,
   ScatterMatrix: Matrix,
   ParallelCoordinates: ParallelCoordinates,
+  CorrelationHeatmap: CorrelationHeatmap,
 
   // Add more icons here...
 };

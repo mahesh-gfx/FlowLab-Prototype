@@ -36,6 +36,7 @@ import D3Node from "../components/nodes/D3Node";
 import ButtonEdge from "../components/edges/ButtonEdge";
 import ScatterPlotMatrixNode from "../components/nodes/ScatterPlotMatrixNode";
 import ParallelCoordinates from "../components/nodes/ParallelCoordinatesNode";
+import CorrelationHeatmap from "../components/nodes/CorrelationHeatmapNode";
 
 interface NodeDefinition {
   name: string;
@@ -173,6 +174,11 @@ const WorkflowProvider = ({ children }: any) => {
           case "ParallelCoordinatesNode":
             return (
               <ParallelCoordinates id={id} data={data} def={def} type={type} />
+            );
+
+          case "CorrelationHeatmapNode":
+            return (
+              <CorrelationHeatmap id={id} data={data} def={def} type={type} />
             );
 
           default:

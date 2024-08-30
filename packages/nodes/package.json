@@ -9,8 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@data-viz-tool/shared": "file:../shared",
     "@data-viz-tool/druidjs": "file:../druidjs",
+    "@data-viz-tool/shared": "file:../shared",
     "papaparse": "^5.4.1",
     "uuid": "^10.0.0"
   },
