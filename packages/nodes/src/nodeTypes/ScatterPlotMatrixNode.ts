@@ -11,7 +11,7 @@ export class ScatterPlotMatrixNode extends BaseNode {
       displayName: "Scatter Plot Matrix",
       description:
         "Visualizes relationships between multiple variables using a scatter plot matrix",
-      icon: "scatter-matrix",
+      icon: "ScatterMatrix",
       color: "#92589D",
       inputs: ["data"],
       outputs: ["plotData"],

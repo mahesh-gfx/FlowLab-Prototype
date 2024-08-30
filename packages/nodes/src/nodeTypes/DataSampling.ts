@@ -11,7 +11,7 @@ export class DataSamplingNode extends BaseNode {
       displayName: "Data Sampling",
       description:
         "Selects a representative subset of data points from a larger dataset",
-      icon: "sampling",
+      icon: "Sampling",
       color: "#132793",
       inputs: ["data"],
       outputs: ["data"],

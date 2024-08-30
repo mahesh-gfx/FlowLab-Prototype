@@ -11,7 +11,7 @@ export class ParallelCoordinatesNode extends BaseNode {
       displayName: "Parallel Coordinates",
       description:
         "Visualizes high-dimensional data using parallel coordinates",
-      icon: "parallel-coordinates",
+      icon: "ParallelCoordinates",
       color: "#BCFA1F",
       inputs: ["data"],
       outputs: ["data"],

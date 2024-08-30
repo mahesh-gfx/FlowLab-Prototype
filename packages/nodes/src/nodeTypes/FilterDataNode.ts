@@ -11,7 +11,7 @@ export class FilterDataNode extends BaseNode {
       displayName: "Filter Data",
       description:
         "Filters data based on multiple criteria and excludes specified columns from output",
-      icon: "filter",
+      icon: "Filter",
       color: "#E621F5",
       inputs: ["data"],
       outputs: ["data"],

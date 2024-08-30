@@ -10,7 +10,7 @@ export class D3JsNode extends BaseNode {
       name: "D3JsNode",
       displayName: "Charts and Plots",
       description: "Visualizes data using D3.js",
-      icon: "chart-bar",
+      icon: "ChartBar",
       color: "#4287f5",
       inputs: ["data"],
       outputs: [],

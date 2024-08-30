@@ -3,8 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext, useEffect } from "react";
 import { Handle, Position, useReactFlow } from "reactflow";
 import { WorkflowContext } from "../../context/WorkflowContext";
-import { camelCaseToTitleCase } from "@data-viz-tool/shared";
+import { camelCaseToTitleCase, getContrastColor } from "@data-viz-tool/shared";
 import CustomHandle from "../handle/CustomHandle";
+import IconLoader from "../ComponentLoader";
 
 const DefaultNode = ({ id, data, def, type, children }: any) => {
   const { deleteNodeById, edges, setEdges } = useContext(WorkflowContext);
@@ -73,9 +74,19 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
           padding: "2px 10px",
           fontSize: "10px",
           backgroundColor: def.color,
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        {data.label}{" "}
+        <IconLoader
+          iconName={def.icon}
+          fontSize="xsmall"
+          color={getContrastColor(def.color)}
+        />
+        <span style={{ marginLeft: "5px", color: getContrastColor(def.color) }}>
+          {data.label}
+        </span>
+
         <div className="node-delete-button-wrapper">
           {type !== "StartNode" && (
             <button className="node-delete-button" onClick={handleDelete}>

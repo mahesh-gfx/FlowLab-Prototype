@@ -10,7 +10,7 @@ export class CleanDataNode extends BaseNode {
       name: "CleanDataNode",
       displayName: "Clean Data",
       description: "Cleans data for information visualization",
-      icon: "clean-data",
+      icon: "CleanData",
       color: "#FF9800",
       inputs: ["data"],
       outputs: ["data"],

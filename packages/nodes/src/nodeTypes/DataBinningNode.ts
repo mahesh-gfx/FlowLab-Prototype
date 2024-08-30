@@ -10,7 +10,7 @@ export class DataBinningNode extends BaseNode {
       name: "DataBinningNode",
       displayName: "Data Binning",
       description: "Groups continuous data into discrete intervals or bins",
-      icon: "bin",
+      icon: "Bin",
       color: "#00A971",
       inputs: ["data"],
       outputs: ["data"],

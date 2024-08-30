@@ -1,4 +1,7 @@
 import React from "react";
+import "./styles/nodePanel.css";
+import IconLoader from "./ComponentLoader";
+import { getContrastColor } from "@data-viz-tool/shared";
 
 interface NodePanelProps {
   nodeTypes: Record<string, any>;
@@ -13,24 +16,13 @@ const NodePanel: React.FC<NodePanelProps> = ({ nodeTypes, onDragStart }) => {
     <aside
       style={{
         position: "absolute",
-        left: 10,
         top: "10%",
         zIndex: 4,
       }}
     >
-      <div
-        style={{
-          position: "fixed",
-          top: "85px",
-          left: "10px",
-          background: "white",
-          padding: "20px",
-          border: "1px solid black",
-          borderRadius: "20px",
-        }}
-      >
-        <span style={{ display: "block", fontWeight: "bold" }}>Node Types</span>
-        <span style={{ fontSize: "12px", color: "grey" }}>
+      <div className="node-panel">
+        <span className="node-panel-title">Nodes</span>
+        <span className="node-panel-sub-title">
           Drag and drop Nodes on the Canvas
         </span>
         <div style={{ padding: "10px" }}>
@@ -43,12 +35,22 @@ const NodePanel: React.FC<NodePanelProps> = ({ nodeTypes, onDragStart }) => {
                 margin: "5px 0",
                 cursor: "grab",
                 background: def.color,
-                color: "white",
+                color: getContrastColor(def.color),
                 padding: "5px 15px",
                 borderRadius: "20px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "10px",
               }}
             >
               {def.displayName || key}
+
+              <IconLoader
+                iconName={def.icon}
+                color={getContrastColor(def.color)}
+                fontSize="medium"
+              />
             </div>
           ))}
         </div>

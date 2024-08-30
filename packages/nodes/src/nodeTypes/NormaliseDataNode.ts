@@ -10,7 +10,7 @@ export class NormalizeDataNode extends BaseNode {
       name: "NormalizeDataNode",
       displayName: "Normalize Data",
       description: "Normalizes numerical data for analysis",
-      icon: "normalize",
+      icon: "Normalize",
       color: "#ECCC12",
       inputs: ["data"],
       outputs: ["data"],

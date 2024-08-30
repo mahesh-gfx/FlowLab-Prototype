@@ -3,3 +3,4 @@ export * from "./types/WorkflowStructure";
 
 export { timer } from "./utils/timer";
 export { camelCaseToTitleCase } from "./utils/camelCaseToTitleCase";
+export { getContrastColor } from "./utils/contrastColor";

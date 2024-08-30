@@ -12,7 +12,7 @@ export class ReadCSVNode extends BaseNode {
       name: "ReadCSVNode",
       displayName: "Read CSV File",
       description: "Reads CSV file for the workflow",
-      icon: "file-csv",
+      icon: "FileCsv",
       color: "#4CAF50",
       inputs: ["data"],
       outputs: ["data"],

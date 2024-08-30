@@ -12,7 +12,7 @@ export class StartNode extends BaseNode {
       name: "StartNode",
       displayName: "Start",
       description: "Marks the start of a workflow",
-      icon: "play-circle",
+      icon: "PlayCircle",
       color: "#00ff00",
       inputs: [],
       outputs: ["main"],
