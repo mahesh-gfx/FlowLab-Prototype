@@ -1,81 +1,141 @@
-Data Visualization Tool Prototype
+# FlowLab
 
-```
-data-viz-tool-prototype
-├─ 📁node_modules
-├─ 📁packages
-│  ├─ 📁backend
-│  │  ├─ 📁node_modules
-│  │  ├─ 📁src
-│  │  │  ├─ 📁models
-│  │  │  ├─ 📁routes
-│  │  │  │  ├─ 📄node.ts
-│  │  │  │  └─ 📄workflow.ts
-│  │  │  ├─ 📁services
-│  │  │  │  ├─ 📄nodeService.ts
-│  │  │  │  └─ 📄workflowService.ts
-│  │  │  └─ 📄app.ts
-│  │  ├─ 📄nodemon.json
-│  │  ├─ 📄package.json
-│  │  ├─ 📄readme.md
-│  │  └─ 📄tsconfig.json
-│  ├─ 📁frontend
-│  │  ├─ 📁node_modules
-│  │  ├─ 📁public
-│  │  │  └─ 📄index.html
-│  │  ├─ 📁src
-│  │  │  ├─ 📁api
-│  │  │  │  ├─ 📄executeWorkflow.ts
-│  │  │  │  └─ 📄getNodeTypes.ts
-│  │  │  ├─ 📁components
-│  │  │  │  ├─ 📁styles
-│  │  │  │  │  ├─ 📄nodeConfigPopup.css
-│  │  │  │  │  ├─ 📄virtualizedTable.css
-│  │  │  │  │  └─ 📄workflowCanvas.css
-│  │  │  │  ├─ 📄NodeConfigPopup.tsx
-│  │  │  │  ├─ 📄NodePanel.tsx
-│  │  │  │  ├─ 📄PopupMessage.tsx
-│  │  │  │  ├─ 📄VirtualizedTable.tsx
-│  │  │  │  └─ 📄WorkflowCanvas.tsx
-│  │  │  ├─ 📁hooks
-│  │  │  ├─ 📁types
-│  │  │  │  └─ 📄nodeTypes.ts
-│  │  │  ├─ 📁utils
-│  │  │  ├─ 📄App.css
-│  │  │  ├─ 📄App.tsx
-│  │  │  ├─ 📄index.css
-│  │  │  ├─ 📄index.tsx
-│  │  │  └─ 📄reportWebVitals.ts
-│  │  ├─ 📄package.json
-│  │  └─ 📄tsconfig.json
-│  ├─ 📁nodes
-│  │  ├─ 📁node_modules
-│  │  ├─ 📁src
-│  │  │  ├─ 📁nodeTypes
-│  │  │  │  ├─ 📄InputNode.ts
-│  │  │  │  ├─ 📄ReadCSVNode.ts
-│  │  │  │  └─ 📄StartNode.ts
-│  │  │  ├─ 📄BaseNode.ts
-│  │  │  └─ 📄index.ts
-│  │  ├─ 📄package.json
-│  │  ├─ 📄tsconfig.json
-│  │  └─ 📄tsconfig.tsbuildinfo
-│  └─ 📁shared
-│     ├─ 📁node_modules
-│     ├─ 📁src
-│     │  ├─ 📁types
-│     │  │  ├─ 📄NodeOutput.ts
-│     │  │  └─ 📄WorkflowStructure.ts
-│     │  ├─ 📁utils
-│     │  └─ 📄index.ts
-│     ├─ 📄package.json
-│     ├─ 📄tsconfig.json
-│     └─ 📄tsconfig.tsbuildinfo
-├─ 📄.gitignore
-├─ 📄lerna-debug.log
-├─ 📄lerna.json
-├─ 📄package-lock.json
-├─ 📄package.json
-├─ 📄README.md
-└─ 📄tsconfig.json
-```
+<img src="./packages/frontend/src/assets/images/flowLab.png" alt="FlowLab Logo" style="max-width: 600px; height: auto;" />
+
+## Project Overview
+
+FlowLab is a flexible node-based workflow tool for pre-processing data, creating and displaying data visualizations.
+
+## Table of Contents
+
+- [FlowLab](#flowlab)
+  - [Project Overview](#project-overview)
+  - [Table of Contents](#table-of-contents)
+  - [Project Structure](#project-structure)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Available Scripts](#available-scripts)
+    - [`npm run build`](#npm-run-build)
+    - [`npm run build-nodes`](#npm-run-build-nodes)
+    - [`npm run start`](#npm-run-start)
+    - [`npm run start:frontend`](#npm-run-startfrontend)
+    - [`npm run start:backend`](#npm-run-startbackend)
+    - [`npm run dev:backend`](#npm-run-devbackend)
+    - [`npm run test`](#npm-run-test)
+    - [`npm run dev`](#npm-run-dev)
+  - [Development](#development)
+  - [Architecture](#architecture)
+  - [Deployment](#deployment)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Acknowledgements](#acknowledgements)
+
+## Project Structure
+
+The project is organized into the following packages:
+
+- `shared`: Common utilities and components shared across other packages
+- `nodes`: Node-based logic for data processing and visualization
+- `backend`: Server-side application
+- `frontend`: Client-side application
+- `druidjs`: Custom package for data querying and processing
+
+## Prerequisites
+
+- Node.js (version 14.x or higher)
+- npm (version 6.x or higher)
+- Git
+
+## Installation
+
+1. Clone the repository:
+2. Install Dependencies
+
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm run build`
+
+Builds all packages in the project.
+
+### `npm run build-nodes`
+
+Builds the nodes package and updates dependencies in the backend and frontend packages.
+
+### `npm run start`
+
+Starts all packages in the project concurrently and the app opens on your default browser
+
+### `npm run start:frontend`
+
+Starts only the frontend application.
+
+### `npm run start:backend`
+
+Starts only the backend application.
+
+### `npm run dev:backend`
+
+Runs the backend in development mode.
+
+### `npm run test`
+
+Runs tests for all packages.
+
+### `npm run dev`
+
+Runs both the backend (in dev mode) and frontend concurrently, with color-coded output.
+
+## Development
+
+This project uses Lerna for managing multiple packages in a single repository.
+
+## Architecture
+
+FlowLab follows a modular architecture:
+
+1. **Frontend**: Built with React, it provides an interactive user interface for creating and viewing visualizations.
+2. **Backend**: Powered by Express and Node.js, it handles data processing, storage, and serves the API.
+3. **Nodes**: Declarative class based nodes for creating data processing and visualization logic.
+4. **DruidJS**: A specialized package for efficient data querying and analysis developed by Rene Cutura; Christoph Kralj; Michael Sedlmair. [DRUIDJS — A JavaScript Library for Dimensionality Reduction](https://doi.org/10.1109/VIS47514.2020.00029) Github: [saehm/DruidJS: A JavaScript Library for Dimensionality Reduction](https://github.com/saehm/DruidJS). There were some build related issued by incompatibility of the package with the project's configuration. Hence, this package was cloned, typedefinitions were written for the modules used in the project, and the package was built.
+5. **Shared**: Contains common utilities and types used across the application.
+
+## Deployment
+
+1. Build the project:
+2. Set up environment variables:
+
+- Create a `.env` file in the root directory
+- Add necessary environment variables (refer to `.env.example` inside the package directories)
+
+1. Deploy the backend:
+
+- Backend can be deployed in services like AWS EC2, using PM2. Currently exploring other options.
+
+1. Deploy the frontend:
+
+- The frontend can be built and deployed separately. It can even be deployed as a static web app.
+
+## Contributing
+
+We welcome contributions to the FlowLab! Please follow these steps:
+
+1. Fork the repository
+2. Create a new branch: `git checkout -b feature/your-feature-name`
+3. Make your changes and commit them: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Submit a pull request
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for our code of conduct and the process for submitting pull requests. (coming soon...)
+
+## License
+
+This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.  
+To view a copy of this license, visit [https://creativecommons.org/licenses/by-nc-sa/4.0/](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+## Acknowledgements
+
+- My sincere gratitude to René Cutura and the contributors of the DRUID.js project for their invaluable work. The DRUID.js library, as hosted on their GitHub repository, has been an important component of this project.
+
+<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://github.com/mahesh-gfx/FlowLab-Prototype">FlowLab</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/mahesh-gfx">Mahesh Adhikari</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt=""></a></p>
