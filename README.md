@@ -14,6 +14,8 @@ FlowLab is a flexible node-based workflow tool for pre-processing data, creating
   - [Project Structure](#project-structure)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+    - [`npm i lerna`](#npm-i-lerna)
+    - [`npx lerna bootstrap`](#npx-lerna-bootstrap)
   - [Available Scripts](#available-scripts)
     - [`npm run build`](#npm-run-build)
     - [`npm run build-nodes`](#npm-run-build-nodes)
@@ -50,6 +52,8 @@ The project is organized into the following packages:
 
 1. Clone the repository:
 2. Install Dependencies
+   ### `npm i lerna`
+   ### `npx lerna bootstrap`
 
 ## Available Scripts
 
