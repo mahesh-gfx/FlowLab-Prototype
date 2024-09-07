@@ -48,16 +48,16 @@ const CorrelationHeatmap = ({ id, data, def, type }: any) => {
     renderCorrelationHeatmap(
       data.output?.data?.json,
       miniChartRef.current,
-      600,
-      600
+      550,
+      550
     );
   };
   const renderExpandedChart = () => {
     renderCorrelationHeatmap(
       data.output?.data?.json,
       expandedChartRef.current,
-      600,
-      600
+      550,
+      550
     );
   };
 
@@ -215,8 +215,6 @@ const CorrelationHeatmap = ({ id, data, def, type }: any) => {
             bottom: "auto",
             marginRight: "-50%",
             transform: "translate(-50%, -50%)",
-            width: "600px",
-            height: "600px",
             display: "flex",
             flexDirection: "column",
             borderRadius: "8px",

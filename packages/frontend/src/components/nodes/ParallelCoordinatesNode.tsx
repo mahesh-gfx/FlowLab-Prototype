@@ -53,8 +53,8 @@ const ParallelCoordinates = ({ id, data, def, type }: any) => {
       data.properties?.variables,
       data.properties?.colorBy,
       miniChartRef.current,
-      600,
-      600
+      550,
+      550
     );
   };
   const renderExpandedChart = () => {
@@ -63,8 +63,8 @@ const ParallelCoordinates = ({ id, data, def, type }: any) => {
       data.properties?.variables,
       data.properties?.colorBy,
       expandedChartRef.current,
-      600,
-      600
+      550,
+      550
     );
   };
 
@@ -78,7 +78,7 @@ const ParallelCoordinates = ({ id, data, def, type }: any) => {
   ) => {
     d3.select(container).selectAll("*").remove();
 
-    const margin = { top: 30, right: 10, bottom: 10, left: 10 };
+    const margin = { top: 30, right: 2, bottom: 10, left: 2 };
     const width = renderWidth - margin.left - margin.right;
     const height = renderHeight - margin.top - margin.bottom;
 
@@ -192,8 +192,6 @@ const ParallelCoordinates = ({ id, data, def, type }: any) => {
             bottom: "auto",
             marginRight: "-50%",
             transform: "translate(-50%, -50%)",
-            width: "600px",
-            height: "600px",
             display: "flex",
             flexDirection: "column",
             borderRadius: "8px",

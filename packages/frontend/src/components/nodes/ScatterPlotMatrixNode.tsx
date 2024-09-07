@@ -65,7 +65,7 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
     // Clear previous SVG
     d3.select(container).selectAll("*").remove();
 
-    const size = 200; // Size of each scatter plot
+    // const size = 200; // Size of each scatter plot
     const padding = 20; // Padding between plots
 
     // Determine variables to use
@@ -79,6 +79,12 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
     // Use all variables if the list is empty
     const varsToUse =
       variablesArray.length > 0 ? variablesArray : Object.keys(data[0]);
+
+    // Calculate size dynamically based on renderWidth and renderHeight
+    const size = Math.min(
+      (renderWidth - padding * (varsToUse.length - 1)) / varsToUse.length,
+      (renderHeight - padding * (varsToUse.length - 1)) / varsToUse.length
+    );
 
     // Adjust margins for smaller containers
     const margin = { top: 10, right: 10, bottom: 30, left: 30 };
@@ -143,7 +149,7 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
           .append("circle")
           .attr("cx", (d: any) => x(d[xVar]))
           .attr("cy", (d: any) => y(d[yVar]))
-          .attr("r", 3)
+          .attr("r", 2)
           .attr("fill", (d: any) => color(d[colorBy]))
           .on("mouseover", function (event, d) {
             tooltip
@@ -166,7 +172,7 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
           g.append("text")
             .attr("x", size / 2)
             .attr("y", size / 2)
-            .attr("dy", ".35em")
+            .attr("dy", ".05em")
             .attr("text-anchor", "middle")
             .text(xVar);
         }
@@ -180,8 +186,8 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
       data.properties?.variables,
       data.properties?.colorBy,
       miniChartRef.current,
-      600,
-      600
+      550,
+      550
     );
   };
   const renderExpandedChart = () => {
@@ -190,8 +196,8 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
       data.properties?.variables,
       data.properties?.colorBy,
       expandedChartRef.current,
-      600,
-      600
+      550,
+      550
     );
   };
 
@@ -236,8 +242,6 @@ const ScatterPlotMatrixNode = ({ id, data, def, type }: any) => {
             bottom: "auto",
             marginRight: "-50%",
             transform: "translate(-50%, -50%)",
-            width: "600px",
-            height: "600px",
             display: "flex",
             flexDirection: "column",
             borderRadius: "8px",
