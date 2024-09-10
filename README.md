@@ -11,7 +11,7 @@
 
 ## Project Overview
 
-FlowLab is a flexible node-based workflow tool for pre-processing data, creating and displaying data visualizations.
+FlowLab is a flexible node-based workflow tool for pre-processing data, creating and displaying data visualisation workflows.
 
 ## Table of Contents
 
