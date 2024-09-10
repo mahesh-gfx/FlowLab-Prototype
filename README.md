@@ -150,4 +150,4 @@ To view a copy of this license, visit [https://creativecommons.org/licenses/by-n
 
 ## Acknowledgements
 
-- My sincere gratitude to René Cutura and the contributors of the DRUID.js project for their invaluable work. The DRUID.js library, as hosted on their GitHub repository, has been an important component of this project.
+- My sincere gratitude to [René Cutura](https://github.com/saehm) and the contributors of the DRUID.js project for their invaluable work. The DRUID.js library, as hosted on their GitHub repository, has been an important component of this project.
