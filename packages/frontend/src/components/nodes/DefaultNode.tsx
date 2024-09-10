@@ -6,10 +6,13 @@ import { WorkflowContext } from "../../context/WorkflowContext";
 import { camelCaseToTitleCase, getContrastColor } from "@data-viz-tool/shared";
 import CustomHandle from "../handle/CustomHandle";
 import IconLoader from "../ComponentLoader";
+import LinearProgress from "@mui/material/LinearProgress";
 
 const DefaultNode = ({ id, data, def, type, children }: any) => {
-  const { deleteNodeById, edges, setEdges } = useContext(WorkflowContext);
+  const { deleteNodeById, edges, executionResults, isExecuting } =
+    useContext(WorkflowContext);
   const { getNode } = useReactFlow();
+  const isExecuted = executionResults.hasOwnProperty(`${id}`);
 
   const handleDelete = () => {
     deleteNodeById(id);
@@ -94,6 +97,11 @@ const DefaultNode = ({ id, data, def, type, children }: any) => {
             </button>
           )}
         </div>
+      </div>
+      <div style={{ width: "100%", height: "5px" }}>
+        {!isExecuted && isExecuting && (
+          <LinearProgress style={{ height: "3px" }} />
+        )}
       </div>
       {data?.properties && (
         <div style={{ padding: "5px 10px" }}>
